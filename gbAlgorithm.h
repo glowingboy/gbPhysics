@@ -12,13 +12,13 @@ namespace gb
 	  tree_node* l;
 	  tree_node* r;
 	  Data data;
-	  size_t sub_tree_size()
+	  size_t tree_size()
 	      {
 		  size_t size = 1;
 		  if(l != nullptr)
-		      size += l->sub_tree_size();
+		      size += l->tree_size();
 		  if(r != nullptr)
-		      size += r->sub_tree_size();
+		      size += r->tree_size();
 
 		  return size;
 	      }

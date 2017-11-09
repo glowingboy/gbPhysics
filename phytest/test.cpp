@@ -16,9 +16,10 @@ struct testData
 
 };
 
+
 int main(int argc, char** argv)
 {
-    const unsigned int count = 100;
+    const unsigned int count = 10;
     testData data[count];
     int intArray[count];
     std::cout<< std::endl << "********************************" << std::endl;
@@ -42,9 +43,9 @@ int main(int argc, char** argv)
 
     std::cout<< std::endl << "********************************" << std::endl;
 
-    std::cout << "tree size: " <<  node.sub_tree_size() << std::endl;
-    std::cout << "l size: " << node.l->sub_tree_size() << std::endl;
-    std::cout << "r size: " << node.r->sub_tree_size() << std::endl;
+    std::cout << "tree size: " <<  node.tree_size() << std::endl;
+    std::cout << "l size: " << node.l->tree_size() << std::endl;
+    std::cout << "r size: " << node.r->tree_size() << std::endl;
     //std::nth_element<int*>(intArray, intArray + 50, intArray + 99);
     return 0;
 }
