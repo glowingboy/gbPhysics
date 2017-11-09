@@ -3,23 +3,17 @@
 #include <cstdlib>
 struct testData
 {
-    struct compare
+    struct getkey
     {
-	bool operator()(const testData& l, const testData& r)const
+	int operator()(const testData& data, const std::uint8_t d)
 	    {
-		return l.key <= r.key;
+		return data.key[d];
 	    }
     };
     
-    struct compare_ptr
-    {
-	bool operator()(const testData* l, const testData* r)const
-	{
-	    return l->key <= r->key;
-	}
-    };
-    
-    int key;
+    int key[2];
+
+
 };
 
 int main(int argc, char** argv)
@@ -30,42 +24,27 @@ int main(int argc, char** argv)
     std::cout<< std::endl << "********************************" << std::endl;
     for(int i = 0; i < count; i++)
     {
-	data[i].key = rand()%100;
-	std::cout << data[i].key << ", ";
+	data[i].key[0] = rand()%count;
+	data[i].key[1] = rand()%count;
+	std::cout << "(" << data[i].key[0] << "," << data[i].key[1] << ") ";
     }
 
     std::cout<< std::endl << "********************************" << std::endl;
 
-    const unsigned int mostCount = 50;
-    gb::Algorithm::quickSelectMost<testData, testData::compare>(data, 0, 99, mostCount);
-//    gb::Algorithm::quickSelectMost(data, 0, 100, 10);
-    for(int i = 0 ; i < count; i++)
-    {
-	std::cout << data[i].key << ", ";
-	if( i == (mostCount -1))
-	    std::cout << "****, ";
-    }
+
+    gb::algorithm::kd_node<testData, 2, gb::algorithm::kd_compare<testData, testData::getkey>> node(data, count);
+
     
-    std::cout<< std::endl << "********************************" << std::endl;
-
-
     for(int i = 0; i < count; i++)
     {
-	intArray[i] = rand()%100;
-	std::cout << intArray[i] << ", ";
-    }
-    std::cout<< std::endl << "********************************" << std::endl;
-
-    gb::Algorithm::quickSelectMost<int>(intArray, 0, count - 1, mostCount);
-
-    for(int i = 0; i < count; i++)
-    {
-	std::cout << intArray[i] << ", ";
-	if(i == (mostCount - 1))
-	    std::cout << "****, ";
+	std::cout << "(" << data[i].key[0] << "," << data[i].key[1] << ") ";
     }
 
     std::cout<< std::endl << "********************************" << std::endl;
 
+    std::cout << "tree size: " <<  node.sub_tree_size() << std::endl;
+    std::cout << "l size: " << node.l->sub_tree_size() << std::endl;
+    std::cout << "r size: " << node.r->sub_tree_size() << std::endl;
+    //std::nth_element<int*>(intArray, intArray + 50, intArray + 99);
     return 0;
 }
