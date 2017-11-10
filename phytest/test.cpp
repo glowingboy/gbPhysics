@@ -1,30 +1,21 @@
 #include <iostream>
 #include "../gbAlgorithm.h"
 #include <cstdlib>
-struct testData
+struct testData:public gb::algorithm::kd_key<int, 2>
 {
-    struct getkey
-    {
-	int operator()(const testData& data, const std::uint8_t d)
-	    {
-		return data.key[d];
-	    }
-    };
-    
-    int key[2];
-
 
 };
 
 
 int main(int argc, char** argv)
 {
-    const unsigned int count = 10;
+    const unsigned int count = 19;
     testData data[count];
     int intArray[count];
     std::cout<< std::endl << "********************************" << std::endl;
     for(int i = 0; i < count; i++)
     {
+//	intArray[i] = rand()%count;
 	data[i].key[0] = rand()%count;
 	data[i].key[1] = rand()%count;
 	std::cout << "(" << data[i].key[0] << "," << data[i].key[1] << ") ";
@@ -33,7 +24,7 @@ int main(int argc, char** argv)
     std::cout<< std::endl << "********************************" << std::endl;
 
 
-    gb::algorithm::kd_node<testData, 2, gb::algorithm::kd_compare<testData, testData::getkey>> node(data, count);
+    gb::algorithm::kd_node<testData> node(data, count);
 
     
     for(int i = 0; i < count; i++)
@@ -43,9 +34,28 @@ int main(int argc, char** argv)
 
     std::cout<< std::endl << "********************************" << std::endl;
 
-    std::cout << "tree size: " <<  node.tree_size() << std::endl;
-    std::cout << "l size: " << node.l->tree_size() << std::endl;
-    std::cout << "r size: " << node.r->tree_size() << std::endl;
+    std::cout << "tree size: " <<  node.size() << std::endl;
+    std::cout << "l size: " << node.l->size() << std::endl;
+    std::cout << "r size: " << node.r->size() << std::endl;
     //std::nth_element<int*>(intArray, intArray + 50, intArray + 99);
+
+    std::cout << std::endl;
+
+    for(int i = 0; i < count ; i++)
+    {
+	std::cout << intArray[i] << ", ";
+    }
+
+    std::cout << std::endl;
+
+    intArray[0] = 5;
+    intArray[1] = 3;
+    std::nth_element<int*>(intArray, intArray + 0, intArray + 2);
+    for(int i = 0; i < count ; i++)
+    {
+	std::cout << intArray[i] << ", ";
+    }
+
+    std::cout << std::endl;
     return 0;
 }
