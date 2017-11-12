@@ -125,27 +125,59 @@ namespace gb
 		    }
 		}
 
-	    kd_node& nearest_neighbour_search(const Data& dst)
+	    kd_node& nearest_neighbour_search(const Data& srchpnt)
 		{
 		    kd_node* best = nullptr;
 
 		    std::deque<kd_node*> path;
-		    this->touch_parents(dst, path);
+		    this->touch_parents(srchpnt, path);
 
-		    best = path.back();
-		    path.pop_back();
+		    // best = path.back();
+		    // path.pop_back();
 
-		    typename Data::key_t bestSqDist = dst.square_distance(*best);
+		    Data::key_t bestSqDist = std::numeric_limits<Data::key_t>::max();
 
-		    auto _unwind(const kd_node& node,
-				 const Data& dst,
-				 typename Data::key_t bestSqDist)
+		    auto _unwind = [&](const kd_node& node)
+			->Data::key_t 
 		    {
+			const Data::key_t curSqDist = srchpnt.square_distance(node.data);
+			if(curSqDist < bestSqDist)
+			    bestSqDist = curSqDist;
+
+			//check l, r
+			const std::uint8_t d = node.d;
+			const Data::key_t spKey = srchpnt.key[d];
+			const Data::key_t curNodeKey = node.key[d];
+
+			static auto _otherSideCheck = [&]()->bool
+			{
+			    const Data::key_t sqDistCheck = std::pow(std::abs(spKey - curNodeKey), 2);
+			    return sqDistCheck <= bestSqDist;
+			}
 			
+			if(spKey <= curNodeKey)//left side
+			{
+			    if(node.l != nullptr)
+				_unwind(node.l);
+
+			    //check the other side
+			    if(node.r != nullptr)
+			    {
+				if(_otherSideCheck())
+				    _unwind(node.r);
+			    }
+			}
+			else
+			{
+			    if(node.r != nullptr)
+				_unwind(node.r);
+			}
+
 		    }
 		    while(!path.empty())
 		    {
-			
+			_unwind(path.back());
+			path.pop_back();
 		    }
 		}
 	    std::uint8_t d;
