@@ -1,6 +1,6 @@
 #pragma once
 #include <cmath>
-
+#include <cstring>
 namespace gb
 {
   namespace math
@@ -9,6 +9,7 @@ namespace gb
       T square_distance(const T* a, const T* b)
       {
 	  T ret;
+	  memset(&ret, 0, sizeof(T));
 
 	  for(int i = 0; i < dimension; i++)
 	  {

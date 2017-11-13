@@ -6,12 +6,13 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/CMake/)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug")
+  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-DGB_DEBUG=1")
 endif()
 
 set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
 
 set(gb_phy_srcs
-  
+  gbAlgorithm.cpp
   )
 
 add_library(gbPhysics STATIC

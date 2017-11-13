@@ -6,6 +6,11 @@
 #include "gbMath.h"
 namespace gb
 {
+    /*
+     *tree_node
+     *kd_node
+     *bit_vector
+     */
     namespace algorithm
     {
 	template<typename Data>
@@ -66,7 +71,7 @@ namespace gb
 		std::uint8_t d;
 	    };
 
-	    key_t square_distance(const kd_key& other)
+	    key_t square_distance(const kd_key& other)const
 		{
 		    return gb::math::square_distance<key_t, k_>(this->key, other.key);
 		}
@@ -80,6 +85,7 @@ namespace gb
 	template<typename Data>
 	struct kd_node: public tree_node<Data>
 	{
+	    typedef typename Data::key_t key_t;
 	    kd_node(Data* data_, size_t size, size_t depth = 0)
 		{
 		    assert((data_ != nullptr && size != 0));
@@ -110,22 +116,72 @@ namespace gb
 			this->r = nullptr;
 		}
 
-	    void touch_parents(Data& child, std::deque<kd_node*>& parents)
+	    void touch_parents(const Data& child, std::deque<kd_node*>& parents)
 		{
 		    parents.push_back(this);
-		    if((typename Data::compare(d))(child, *this))
+		    if((typename Data::compare(d))(child, this->data))
 		    {
 			if(this->l != nullptr)
-			    this->l->touch_parent(child, parents);
+			    ((kd_node*)(this->l))->touch_parents(child, parents);
 		    }
 		    else
 		    {
 			if(this->r != nullptr)
-			    this->r->touch_parent(child, parents);
+			    ((kd_node*)(this->r))->touch_parents(child, parents);
 		    }
 		}
 
-	    kd_node& nearest_neighbour_search(const Data& srchpnt)
+	    void _unwind(const Data& srchpnt, key_t& bestSqDist, kd_node*& best, kd_node* node, bool bFromPath)
+		{
+		    const key_t curSqDist = srchpnt.square_distance(node->data);
+		    if(curSqDist < bestSqDist)
+		    {
+			bestSqDist = curSqDist;
+			best = node;
+		    }
+			    
+
+		    //check l, r
+		    const std::uint8_t d = node->d;
+		    const key_t spKey = srchpnt.key[d];
+		    const key_t curNodeKey = node->data.key[d];
+
+		    static auto _otherSideCheck = [&]()->bool
+			{
+			    const key_t sqDistCheck = std::pow(std::abs(spKey - curNodeKey), 2);
+			    return sqDistCheck <= bestSqDist;
+			};
+			
+		    if(spKey <= curNodeKey)//left side
+		    {
+			//same side
+			if(!bFromPath && node->l != nullptr)
+			    _unwind(srchpnt, bestSqDist, best, (kd_node*)node->l, false);
+
+			//check the other side
+			if(node->r != nullptr)
+			{
+			    if(_otherSideCheck())
+				_unwind(srchpnt, bestSqDist, best, (kd_node*)node->r, false);
+			}
+		    }
+		    else
+		    {
+			//same side
+			if(!bFromPath && node->r != nullptr)
+			    _unwind(srchpnt, bestSqDist, best, (kd_node*)node->r, false);
+
+			if(node->l != nullptr)
+			{
+			    if(_otherSideCheck())
+				_unwind(srchpnt, bestSqDist, best, (kd_node*)node->l, false);
+			}
+		    }
+
+		};
+	
+	    
+	    kd_node* nearest_neighbour_search(const Data& srchpnt)
 		{
 		    kd_node* best = nullptr;
 
@@ -135,52 +191,63 @@ namespace gb
 		    // best = path.back();
 		    // path.pop_back();
 
-		    Data::key_t bestSqDist = std::numeric_limits<Data::key_t>::max();
+		    key_t bestSqDist = std::numeric_limits<key_t>::max();
 
-		    auto _unwind = [&](const kd_node& node)
-			->Data::key_t 
-		    {
-			const Data::key_t curSqDist = srchpnt.square_distance(node.data);
-			if(curSqDist < bestSqDist)
-			    bestSqDist = curSqDist;
-
-			//check l, r
-			const std::uint8_t d = node.d;
-			const Data::key_t spKey = srchpnt.key[d];
-			const Data::key_t curNodeKey = node.key[d];
-
-			static auto _otherSideCheck = [&]()->bool
-			{
-			    const Data::key_t sqDistCheck = std::pow(std::abs(spKey - curNodeKey), 2);
-			    return sqDistCheck <= bestSqDist;
-			}
-			
-			if(spKey <= curNodeKey)//left side
-			{
-			    if(node.l != nullptr)
-				_unwind(node.l);
-
-			    //check the other side
-			    if(node.r != nullptr)
-			    {
-				if(_otherSideCheck())
-				    _unwind(node.r);
-			    }
-			}
-			else
-			{
-			    if(node.r != nullptr)
-				_unwind(node.r);
-			}
-
-		    }
+		    typedef void (*unwindfunc)(kd_node* node, bool bFromPath);
 		    while(!path.empty())
 		    {
-			_unwind(path.back());
+			_unwind(srchpnt, bestSqDist, best, path.back(), true);
 			path.pop_back();
 		    }
+
+		    return best;
 		}
 	    std::uint8_t d;
+	};
+
+
+	class bit_vector
+	{
+	public:
+	    inline bit_vector():
+		_data(nullptr),
+		_curSize(0),
+		_capacity(0)
+		{}
+	    inline ~bit_vector()
+		{
+		    if(_data != nullptr)
+		    {
+			delete [] _data;
+			_data = nullptr;
+		    }
+		}
+	    void reserve(const size_t capacity);
+	    void realloc(const size_t capacity);
+	    void insert(const std::uint8_t bitVal, const size_t beginIdx, const size_t size);
+	    std::uint8_t operator[](const size_t index);
+	private:
+	    std::uint8_t* _data;
+	    size_t _curSize;//bit size
+	    size_t _capacity;//bit capacity
+	private:
+	    //save from right to left( the higher index the more left-shift)
+	    static inline void _set_byte_uint(std::uint8_t& byte, const std::uint8_t index, const std::uint8_t bitVal)
+		{
+		    assert(index <= 7);
+		    assert(bitVal <= 1);
+		    
+		    byte |= bitVal << index; 
+		}
+
+	    static inline std::uint8_t _get_byte_uint(const std::uint8_t& byte, const std::uint8_t index)
+		{
+		    assert(index <= 7);
+
+		    const std::uint8_t mask = 1 << index;
+		    return (byte & mask) >> index;
+		}
+
 	};
     }
 }
