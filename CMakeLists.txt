@@ -2,22 +2,18 @@ cmake_minimum_required(VERSION 3.0)
 
 project(gbPhysics)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/CMake/)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/gbCMake/)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Debug")
-  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-DGB_DEBUG=1")
-endif()
+include(gbCMake/gbCommon.cmake)
 
-set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11")
+set(gb_phy_srcs)
+gb_add_class(gbAlgorithm . gb_phy_srcs)
+gb_add_class(gbMath . gb_phy_srcs)
 
-set(gb_phy_srcs
-  gbAlgorithm.cpp
-  )
+message("srcs: " ${gb_phy_srcs})
 
 add_library(gbPhysics STATIC
   ${gb_phy_srcs}
-  gbAlgorithm.h
   )
 
 set_target_properties(gbPhysics
@@ -30,11 +26,17 @@ set_target_properties(gbPhysics
 if(UNIX)
   set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gbPhysics)
 endif()
-
+ 
 message("install dir: " ${CMAKE_INSTALL_PREFIX})
 
 install(TARGETS gbPhysics ARCHIVE DESTINATION lib)
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include
+file(GLOB headers . "*.h")
+message("headers: " ${headers})
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION include
   FILES_MATCHING PATTERN "*.h"
+  PATTERN "build" EXCLUDE
+  PATTERN ".*" EXCLUDE
+  PATTERN "gbCMake" EXCLUDE
+  PATTERN "phytest" EXCLUDE
   )
