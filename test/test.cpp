@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../gbAlgorithm.h"
+#include "../src/gbAlgorithm.h"
 #include <cstdlib>
 struct testData:public gb::algorithm::kd_key<int, 2>
 {
