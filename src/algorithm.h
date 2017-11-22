@@ -224,7 +224,7 @@ namespace gb
 		}
 	    void reserve(const size_t capacity);
 	    void realloc(const size_t capacity);
-	    void insert(const std::uint8_t bitVal, const size_t beginIdx, const size_t size);
+	    void insert(const size_t beginIdx, const size_t size, const std::uint8_t bitVal);
 	    std::uint8_t operator[](const size_t index);
 	private:
 	    std::uint8_t* _data;

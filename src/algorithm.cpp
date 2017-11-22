@@ -48,7 +48,7 @@ void bit_vector::realloc(const size_t capacity)
 
     _data = newData;
 }
-void bit_vector::insert(const std::uint8_t bitVal, const size_t beginIdx, const size_t size)
+void bit_vector::insert(const size_t beginIdx, const size_t size, const std::uint8_t bitVal)
 {
     assert(bitVal <= 1);
     if(size == 0)

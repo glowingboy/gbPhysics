@@ -19,7 +19,7 @@ int bit_vector_test(const unsigned int count = 1000)
     {
 	if(curVal != bitArray[i])
 	{
-	    bitVec.insert(curVal, curValIdx, curValSize);
+	    bitVec.insert(curValIdx, curValSize, curVal);
 	    curVal = bitArray[i];
 	    curValSize = 1;
 	    curValIdx = i;
@@ -31,7 +31,7 @@ int bit_vector_test(const unsigned int count = 1000)
 
     }
 
-    bitVec.insert(curVal, curValIdx, curValSize);
+    bitVec.insert(curValIdx, curValSize, curVal);
     
     for(int i = 0; i < count; i++)
     {
