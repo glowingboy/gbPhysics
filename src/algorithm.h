@@ -75,13 +75,18 @@ namespace gb
 		{
 		    return gb::math::square_distance<key_t, k_>(this->key, other.key);
 		}
-	    
+	    kd_key(...):
+		key{...}
+		{}
 	    key_t key[k_];
 	    static std::uint8_t k;
 	};
       	template<typename Key, std::uint8_t k_>
 	std::uint8_t kd_key<Key, k_>::k = k_;
 
+	/*
+	 *@brief, Data must derived from kd_key
+	 */
 	template<typename Data>
 	struct kd_node: public tree_node<Data>
 	{
