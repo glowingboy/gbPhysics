@@ -294,7 +294,7 @@ namespace gb
 		_data(new T[row_ * col_]{args ...})
 		{}
 
-	    array_2d(const array_2d&& other):
+	    array_2d(array_2d&& other):
 		row(other.row),
 		col(other.col),
 		_data(other._data)
@@ -320,7 +320,7 @@ namespace gb
 		const std::uint32_t x;
 	    };
 	private:
-	    T* const _data;
+	    T* _data;
 	};
     }
 }
