@@ -54,7 +54,7 @@ namespace gb
 	    {
 		bool operator()(const kd_key& l, const kd_key& r)
 		    {
-			return l.key[d] <= r.key[d];
+			return l.key[d] < r.key[d];
 		    }
 
 		compare(const std::uint8_t d_):
@@ -71,13 +71,15 @@ namespace gb
 		std::uint8_t d;
 	    };
 
+	    template<typename ... Args>
+	    kd_key(Args ... arg):
+		key{arg ...}
+		{}
+	    
 	    key_t square_distance(const kd_key& other)const
 		{
 		    return gb::math::square_distance<key_t, k_>(this->key, other.key);
 		}
-	    kd_key(...):
-		key{...}
-		{}
 	    key_t key[k_];
 	    static std::uint8_t k;
 	};
@@ -186,9 +188,9 @@ namespace gb
 		};
 	
 	    
-	    kd_node* nearest_neighbour_search(const Data& srchpnt)
+	    key_t nearest_neighbour_search(const Data& srchpnt, kd_node*& ret)
 		{
-		    kd_node* best = nullptr;
+		    ret = nullptr;
 
 		    std::deque<kd_node*> path;
 		    this->touch_parents(srchpnt, path);
@@ -201,11 +203,11 @@ namespace gb
 		    typedef void (*unwindfunc)(kd_node* node, bool bFromPath);
 		    while(!path.empty())
 		    {
-			_unwind(srchpnt, bestSqDist, best, path.back(), true);
+			_unwind(srchpnt, bestSqDist, ret, path.back(), true);
 			path.pop_back();
 		    }
 
-		    return best;
+		    return bestSqDist;
 		}
 	    std::uint8_t d;
 	};
@@ -230,7 +232,7 @@ namespace gb
 	    void reserve(const size_t capacity);
 	    void realloc(const size_t capacity);
 	    void insert(const size_t beginIdx, const size_t size, const std::uint8_t bitVal);
-	    std::uint8_t operator[](const size_t index);
+	    std::uint8_t operator[](const size_t index) const;
 	private:
 	    std::uint8_t* _data;
 	    size_t _curSize;//bit size
@@ -253,6 +255,72 @@ namespace gb
 		    return (byte & mask) >> index;
 		}
 
+	};
+
+	template<typename T>
+	class array_2d
+	{
+	private:
+	    struct _proxy
+	    {
+		_proxy(T* data):
+		    _data(data)
+		    {}
+		T& operator[](const std::uint32_t col_)
+		    {
+			return _data[col_];
+		    }
+
+		T* const _data;
+	    };
+
+	public:
+	    ~array_2d()
+		{
+		    if(_data != nullptr)
+			delete [] _data;
+		}
+	    array_2d() = delete;
+	    array_2d(const std::uint32_t row_, const std::uint32_t col_):
+		row(row_),
+		col(col_),
+		_data(new T[row_ * col_]{0})
+		{}
+	    
+	    template<typename ... Args>
+	    array_2d(const std::uint32_t row_, const std::uint32_t col_, Args ... args):
+		row(row_),
+		col(col_),
+		_data(new T[row_ * col_]{args ...})
+		{}
+
+	    array_2d(const array_2d&& other):
+		row(other.row),
+		col(other.col),
+		_data(other._data)
+		{
+		    other._data = nullptr;
+		}
+
+	    inline _proxy operator[](const std::uint32_t row_)
+		{
+		    return _proxy(_data + row_ * col);
+		}
+	    union
+	    {
+		const std::uint32_t row;
+		const std::uint32_t height;
+		const std::uint32_t y;
+	    };
+
+	    union
+	    {
+		const std::uint32_t col;
+		const std::uint32_t width;
+		const std::uint32_t x;
+	    };
+	private:
+	    T* const _data;
 	};
     }
 }

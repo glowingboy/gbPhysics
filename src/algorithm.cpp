@@ -104,9 +104,9 @@ void bit_vector::insert(const size_t beginIdx, const size_t size, const std::uin
     _curSize += size;
 }
 
-std::uint8_t bit_vector::operator[](const size_t index)
+std::uint8_t bit_vector::operator[](const size_t index)const
 {
-    assert(index < _curSize);
+    assert(index < _capacity);
     const size_t byteIdx = index / 8;
     return _get_byte_uint(_data[byteIdx], index % 8);
 }

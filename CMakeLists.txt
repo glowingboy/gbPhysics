@@ -11,6 +11,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gbPhysicsConfig.h.in ${CMAKE_CURRENT_
 set(gb_phy_srcs)
 gb_add_class(algorithm src gb_phy_srcs)
 gb_add_class(math src gb_phy_srcs)
+gb_add_class(image src gb_phy_srcs)
 
 add_library(gbPhysics STATIC
   ${gb_phy_srcs}

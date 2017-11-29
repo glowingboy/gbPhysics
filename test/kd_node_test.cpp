@@ -1,5 +1,5 @@
 #include <gbPhysics/algorithm.h>
-
+#include <initializer_list>
 struct testData:public gb::algorithm::kd_key<int, 2>
 {
 
@@ -7,6 +7,7 @@ struct testData:public gb::algorithm::kd_key<int, 2>
 
 int kd_node_test(const unsigned int count = 1000)
 {
+    
     testData data[count];
 
     for(int i = 0; i < count; i ++)
@@ -28,7 +29,8 @@ int kd_node_test(const unsigned int count = 1000)
     testData sp;
     sp.key[0] = 4;
     sp.key[1] = 1;
-    gb::algorithm::kd_node<testData>* ret = node.nearest_neighbour_search(sp);
+    gb::algorithm::kd_node<testData>* ret;
+    int dist = node.nearest_neighbour_search(sp, ret);
     assert(ret != nullptr);
     std::cout << "ret: " << "(" << ret->data.key[0] << ", " << ret->data.key[1] << ")" << std::endl;
     std::cout<< std::endl << "********************************" << std::endl;
