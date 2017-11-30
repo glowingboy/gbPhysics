@@ -36,44 +36,72 @@ namespace gb
 	}
 
 
-	array_2d<std::uint8_t> signed_distance_field(const bit_vector& img, const std::uint32_t width, const std::uint32_t height, const std::uint32_t sampleScale = 1)
+	array_2d<std::uint8_t> signed_distance_field(const bit_vector& img,
+						     const std::uint32_t width,
+						     const std::uint32_t height,
+						     const std::uint32_t sampleScale = 1);
+	
+	template<typename Side, typename Sprite>
+	struct binay_bin_packing_node_data
 	{
-	    typedef kd_key<std::uint32_t, 2> contour_coord;
-
-	    std::vector<contour_coord> contour = binary_img_contour<contour_coord>(img, width, height);
-
-	    kd_node<contour_coord> kd_contour(contour.data(), contour.size());
-
-	    array_2d<std::uint8_t> sdf(width / sampleScale, height / sampleScale);
-	    
-	    const std::uint32_t sdfW = sdf.width;
-	    const std::uint32_t sdfH = sdf.height;
-	    
-	    std::int64_t sqMaxDist = std::pow(sdfW, 2) + std::pow(sdfH, 2);
-
-	    interval_mapper<std::int64_t, std::uint8_t> mapper(-sqMaxDist, sqMaxDist, 0, 255);
-	    
-	    std::uint32_t iSdf = 0, jSdf = 0;
-	    
-	    for(int jImg = 0; jSdf < sdfH; jImg += sampleScale)
+	    Side range[2];
+	    Sprite* sprite;
+	};
+	template<typename Side, typename Sprite>
+	struct binary_bin_packing_node:
+	    public binary_tree_node<binay_bin_packing_node_data<Side, Sprite>>
+	{
+	    binary_bin_packing_node(const Sprite* sprite, const Side (&range)[2])
 	    {
-		for(int iImg = 0; iSdf < sdfW; iImg += sampleScale)
-		{
-		    //1. get nn dist
-		    kd_node<contour_coord>* nn;
-		    std::int64_t sqNDist = kd_contour.nearest_neighbour_search(contour_coord(iImg, jImg), nn);
-		    //2. get sign
-		    if(img[jImg * width + iImg] != 0)
-			sqNDist = -sqNDist;
-
-		    //3.map from [-sqMaxdist, sqMaxdist] to [0, 255]
-		    sdf[jSdf][iSdf] = mapper.map(sqNDist);
-		    
-		    iSdf++;
-		}
-		jSdf++;
+		
 	    }
-	    return sdf;
-	}
+
+	    void newbranch(const Sprite* sprite)
+	    {
+		
+	    }
+	    void insert(const Sprite* sprite)
+	    {
+		Side (&range)[2] = data.range;
+		if(sprite.width <= range[0] && sprite.height <= range[1])//fit current node
+		{
+		    //then go to left?
+		    if(l != nullptr)//go to left
+			(binary_bin_packing_node*)l->insert(sprite);
+		    else//at leaf now, go parent's right
+		    {
+			if(parent != nullptr)
+			{
+			    binary_bin_packing_node*& pr = parent->r;
+			    if(pr != nullptr)
+				pr->insert(sprite);
+			    else//new shelf
+				pr = 
+			}
+		    }
+			
+		}
+	    }
+
+	    binary_tree_node* p;//parent
+	    
+	    static binary_bin_packing_node build(const std::vector<Sprite>& sprites)
+	    {
+		binary_bin_packing_node root;
+
+		
+	    }
+	};
+
+	template<typename T>
+	array_2d<T> packing(std::vector<array_2d<T> sprites)
+	{
+	    //pre. sort sprites by height?
+	    
+	    //1. build binary bin packing tree
+	    binary_bin_packing_node<T, array_2d<T>>  node(sprites.data(), sprites.size());
+
+	    
+	};
     };
 };

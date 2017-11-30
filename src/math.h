@@ -40,6 +40,6 @@ namespace gb
 	  const B _interval_b_l;
 	  float _scale;
       };
-	  
+
   };
 };

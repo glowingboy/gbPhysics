@@ -12,6 +12,6 @@ int main(int argc, char** argv)
 {
     test(kd_node_test);
     test(bit_vector_test);
-    
+
     return 0;
 }

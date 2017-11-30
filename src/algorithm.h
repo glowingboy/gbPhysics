@@ -14,10 +14,15 @@ namespace gb
     namespace algorithm
     {
 	template<typename Data>
-	struct tree_node
+	struct binary_tree_node
 	{
-	    tree_node* l;
-	    tree_node* r;
+	    binary_tree_node()
+		l(nullptr),
+		r(nullptr)
+		{}
+	    
+	    binay_tree_node* l;
+	    binay_tree_node* r;
 	    Data data;
 	    size_t size()
 		{
@@ -29,7 +34,7 @@ namespace gb
 
 		    return size;
 		}
-	    virtual ~tree_node()
+	    virtual ~binay_tree_node()
 		{
 		    if(l != nullptr)
 		    {
@@ -90,7 +95,7 @@ namespace gb
 	 *@brief, Data must derived from kd_key
 	 */
 	template<typename Data>
-	struct kd_node: public tree_node<Data>
+	struct kd_node: public binay_tree_node<Data>
 	{
 	    typedef typename Data::key_t key_t;
 	    kd_node(Data* data_, size_t size, size_t depth = 0)
@@ -102,8 +107,9 @@ namespace gb
 		    //selecte median
 		    const size_t medianIdx = size / 2;
 		    std::nth_element<Data*,  typename Data::compare>(data_,
-							 data_ + medianIdx,
-							     data_ + size, typename Data::compare(d));
+								     data_ + medianIdx,
+								     data_ + size,
+								     typename Data::compare(d));
 
 		    this->data = data_[medianIdx];
 		  
@@ -256,7 +262,7 @@ namespace gb
 		}
 
 	};
-
+	
 	template<typename T>
 	class array_2d
 	{
@@ -278,7 +284,10 @@ namespace gb
 	    ~array_2d()
 		{
 		    if(_data != nullptr)
+		    {
 			delete [] _data;
+			_data = nullptr;
+		    }
 		}
 	    array_2d() = delete;
 	    array_2d(const std::uint32_t row_, const std::uint32_t col_):
