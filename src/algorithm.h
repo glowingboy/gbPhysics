@@ -13,17 +13,15 @@ namespace gb
      */
     namespace algorithm
     {
-	template<typename Data>
 	struct binary_tree_node
 	{
-	    binary_tree_node()
+	    binary_tree_node():
 		l(nullptr),
 		r(nullptr)
 		{}
 	    
-	    binay_tree_node* l;
-	    binay_tree_node* r;
-	    Data data;
+	    binary_tree_node* l;
+	    binary_tree_node* r;
 	    size_t size()
 		{
 		    size_t size = 1;
@@ -34,7 +32,7 @@ namespace gb
 
 		    return size;
 		}
-	    virtual ~binay_tree_node()
+	    virtual ~binary_tree_node()
 		{
 		    if(l != nullptr)
 		    {
@@ -47,6 +45,13 @@ namespace gb
 			delete r;
 			r = nullptr;
 		    }
+		}
+	    template<typename Func>
+	    void traverse_in_order(Func& func)
+		{
+		    l->traverse_in_order(func);
+		    func(this);
+		    r->traverse_in_order(func);
 		}
 	};
 
@@ -95,7 +100,7 @@ namespace gb
 	 *@brief, Data must derived from kd_key
 	 */
 	template<typename Data>
-	struct kd_node: public binay_tree_node<Data>
+	struct kd_node: public binary_tree_node
 	{
 	    typedef typename Data::key_t key_t;
 	    kd_node(Data* data_, size_t size, size_t depth = 0)
@@ -215,6 +220,7 @@ namespace gb
 
 		    return bestSqDist;
 		}
+	    Data data;
 	    std::uint8_t d;
 	};
 
@@ -262,7 +268,10 @@ namespace gb
 		}
 
 	};
-	
+
+	/*
+	 *@brief, a static 2d array type
+	 */
 	template<typename T>
 	class array_2d
 	{
@@ -311,22 +320,44 @@ namespace gb
 		    other._data = nullptr;
 		}
 
-	    inline _proxy operator[](const std::uint32_t row_)
+	    void operator=(array_2d&& other)
+	    	{
+	    	    row = other.row;
+	    	    col = other.col;
+	    	    _data = other._data;
+		    other._data = nullptr;
+	    	}
+	    _proxy operator[](const std::uint32_t row_)
 		{
 		    return _proxy(_data + row_ * col);
 		}
+	    void insert(const std::uint32_t location[2], array_2d<T>& other)
+		{
+		    const std::uint32_t o_x = location[0];
+		    const std::uint32_t o_y = location[1];
+		    const std::uint32_t height = other.height;
+		    const std::uint32_t width = other.width;
+		    
+		    for(int i = 0; i < height; i++)
+		    {
+			for(int j = 0; j < width; j++)
+			{
+			    this->operator[](o_x)[o_y + j] = other[i][j];
+			}
+		    }
+		}
 	    union
 	    {
-		const std::uint32_t row;
-		const std::uint32_t height;
-		const std::uint32_t y;
+		std::uint32_t row;
+		std::uint32_t height;
+		std::uint32_t y;
 	    };
 
 	    union
 	    {
-		const std::uint32_t col;
-		const std::uint32_t width;
-		const std::uint32_t x;
+		std::uint32_t col;
+		std::uint32_t width;
+		std::uint32_t x;
 	    };
 	private:
 	    T* _data;

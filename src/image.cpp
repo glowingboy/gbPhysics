@@ -24,9 +24,9 @@ array_2d<std::uint8_t> signed_distance_field(const bit_vector& img,
 	    
     std::uint32_t iSdf = 0, jSdf = 0;
 	    
-    for(int jImg = 0; jSdf < sdfH; jImg += sampleScale)
+    for(std::uint32_t jImg = 0; jSdf < sdfH; jImg += sampleScale)
     {
-	for(int iImg = 0; iSdf < sdfW; iImg += sampleScale)
+	for(std::uint32_t iImg = 0; iSdf < sdfW; iImg += sampleScale)
 	{
 	    //1. get nn dist
 	    kd_node<contour_coord>* nn;
