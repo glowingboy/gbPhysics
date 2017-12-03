@@ -2,7 +2,7 @@
 
 using namespace gb::image;
 
-array_2d<std::uint8_t> signed_distance_field(const bit_vector& img,
+array_2d<std::uint8_t> gb::image::signed_distance_field(const bit_vector& img,
 					     const std::uint32_t width,
 					     const std::uint32_t height,
 					     const std::uint32_t sampleScale)

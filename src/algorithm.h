@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <deque>
+#include <array>
 #include "math.h"
 namespace gb
 {
@@ -331,7 +332,7 @@ namespace gb
 		{
 		    return _proxy(_data + row_ * col);
 		}
-	    void insert(const std::uint32_t location[2], array_2d<T>& other)
+	    void insert(const std::array<std::uint32_t, 2>& location, array_2d<T>& other)
 		{
 		    const std::uint32_t o_x = location[0];
 		    const std::uint32_t o_y = location[1];

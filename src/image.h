@@ -99,7 +99,7 @@ namespace gb
 
 	 */
 
-	template<typename Side, typename Sprite>
+	template<typename Side>
 	struct binay_bin_packing_node_data
 	{
 	    enum axis
@@ -128,7 +128,7 @@ namespace gb
 	struct binary_bin_packing_node:
 	    public binary_tree_node
 	{
-	    typedef typename binay_bin_packing_node_data<Side, Sprite>::axis axis;
+	    typedef typename binay_bin_packing_node_data<Side>::axis axis;
 	    
 	    binary_bin_packing_node(const axis split_axis,
 				    const Side side,
@@ -142,9 +142,9 @@ namespace gb
 	    {}
 
 	private:
-	    binary_bin_packing_node* _new_branch(const Sprite& sprite)
+	    binary_bin_packing_node* _new_branch(const Sprite& sprite, binary_bin_packing_node* parent_)
 	    {
-		binary_bin_packing_node* y = new binary_bin_packing_node(axis::y, sprite.height, this);
+		binary_bin_packing_node* y = new binary_bin_packing_node(axis::y, sprite.height, parent_);
 		y->l = new binary_bin_packing_node(axis::x, sprite.width, y);
 		y->l->l = new binary_bin_packing_node(((binary_bin_packing_node*)y->l));
 		return y;
@@ -153,7 +153,7 @@ namespace gb
 	    void _try_endup(const Sprite& sprite, Side (&boundary)[2], std::uint32_t (&location)[2])
 	    {
 		if(sprite.width <= boundary[0] && sprite.height <= boundary[1])//ended here?
-		    parent->r = _new_branch(sprite);
+		    r = _new_branch(sprite, this);
 		else/*walk up to different branch. because of always traversing left child first, 
 		      so parent's right child is always untraversed branch, unless i am at traversing
 		      this branch now.
@@ -189,7 +189,12 @@ namespace gb
 			    assert(true);
 		    }
 		    //found, do insert again
-		    childNode->insert(sprite, boundary, location);
+		    binary_tree_node*& rightNode = parentNode->r;
+		    if(rightNode != nullptr)
+			((binary_bin_packing_node*)rightNode)->insert(sprite, boundary, location);
+		    else
+			rightNode = _new_branch(sprite, parentNode);
+	
 		    
 		}
 
@@ -211,15 +216,17 @@ namespace gb
 		}
 		else if(data.split_axis == axis::y)
 		{
-
+		    //left child boundary
+		    Side old_boundary_y = boundary[1];
+		    boundary[1] = data.split_value;
 		    if(sprite.width <= boundary[0] && sprite.height <= boundary[1])//go to left
 		    {
 			assert(l != nullptr);
-			boundary[1] = data.split_value;
 			((binary_bin_packing_node*)l)->insert(sprite, boundary, location);
 		    }
 		    else//go to right
 		    {
+			boundary[1] = old_boundary_y;
 			boundary[1] = boundary[1] - data.split_value;
 			location[1] += data.split_value;
 			if(r != nullptr)
@@ -241,7 +248,7 @@ namespace gb
 	    }
 
 	    binary_bin_packing_node* parent;//parent
-	    binay_bin_packing_node_data<Side, Sprite> data;
+	    binay_bin_packing_node_data<Side> data;
 	};
 
 	template<typename T>
@@ -275,15 +282,21 @@ namespace gb
 	    }
 	    
 	    //1. build binary bin packing tree
-	    binary_bin_packing_node<T, array_2d<T>> root(nullptr);
-	    T boundary[2] = {width, std::numeric_limits<T>::max()};
+	    binary_bin_packing_node<std::uint32_t, array_2d<T>> root(
+		binay_bin_packing_node_data<std::uint32_t>::axis::x,
+		0,
+		nullptr);//all children will be at right of root
+	    
 	    
 	    std::vector<std::array<std::uint32_t, 2>> locations;
 	    std::for_each(sprites.begin(),
 			  sprites.end(),
-			  [&root, &boundary, &locations](array_2d<T>& sprite)
+			  [width, &root, &locations](array_2d<T>& sprite)
 			  {
-			      std::uint32_t location[2]{T(0), T(0)};
+			      std::uint32_t location[2]{0, 0};
+			      std::uint32_t boundary[2] =
+				  {width, std::numeric_limits<std::uint32_t>::max()};
+
 			      root.insert(sprite, boundary, location);
 			      locations.push_back({location[0], location[1]});
 			  });
@@ -295,7 +308,7 @@ namespace gb
 	    //2.fill up bin
 	    for(int i = 0; i < sprites.size(); i++)
 	    {
-		bin.insert(locations[i].data(), sprites[i]);
+		bin.insert(locations[i], sprites[i]);
 	    }
 
 	    return bin;
