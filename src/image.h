@@ -150,16 +150,14 @@ namespace gb
 		return y;
 	    }
 	    
-	    void _try_endup(const Sprite& sprite, Side (&boundary)[2], std::uint32_t (&location)[2])
+	    void _walking_up(const Sprite& sprite, Side (&boundary)[2], std::uint32_t (&location)[2])
 	    {
-		if(sprite.width <= boundary[0] && sprite.height <= boundary[1])//ended here?
-		    r = _new_branch(sprite, this);
-		else/*walk up to different branch. because of always traversing left child first, 
-		      so parent's right child is always untraversed branch, unless i am at traversing
-		      this branch now.
-		      So, should always find a node is left child of it's parent.
+		/*walk up to different branch. because of always traversing left child first, 
+		  so parent's right child is always untraversed branch, unless i am at traversing
+		  this branch now.
+		  So, should always find a node is left child of it's parent.
 		    */
-		{
+
 		    //finding a node at left child of it's parent
 		    binary_bin_packing_node* childNode = this;
 		    binary_bin_packing_node* parentNode = parent;
@@ -194,10 +192,6 @@ namespace gb
 			((binary_bin_packing_node*)rightNode)->insert(sprite, boundary, location);
 		    else
 			rightNode = _new_branch(sprite, parentNode);
-	
-		    
-		}
-
 	    }
 	public:
 	    void insert(const Sprite& sprite, Side (&boundary)[2], std::uint32_t (&location)[2])
@@ -208,11 +202,20 @@ namespace gb
 
 		    //new boundary of right
 		    boundary[0] = boundary[0] - data.split_value;
-		    location[0] += data.split_value;
-		    if(r != nullptr)
-			((binary_bin_packing_node*)r)->insert(sprite, boundary, location);
-		    else//should be ended here?
-			_try_endup(sprite, boundary, location);
+		    if(sprite.width <= boundary[0] && sprite.height <= boundary[1])
+		    {
+			location[0] += data.split_value;
+			if(r != nullptr)
+			    ((binary_bin_packing_node*)r)->insert(sprite, boundary, location);
+			else
+			    r = _new_branch(sprite, this);
+		    }
+		    else//walking up
+		    {
+			boundary[0] += data.split_value;
+			_walking_up(sprite, boundary, location);
+		    }
+			
 		}
 		else if(data.split_axis == axis::y)
 		{
@@ -228,11 +231,21 @@ namespace gb
 		    {
 			boundary[1] = old_boundary_y;
 			boundary[1] = boundary[1] - data.split_value;
-			location[1] += data.split_value;
-			if(r != nullptr)
-			    ((binary_bin_packing_node*)r)->insert(sprite, boundary, location);
+
+			if(sprite.width <= boundary[0] && sprite.height <= boundary[1])
+			{
+			    location[1] += data.split_value;
+			    if(r != nullptr)
+				((binary_bin_packing_node*)r)->insert(sprite, boundary, location);
+			    else
+				r = _new_branch(sprite, this);
+			}
 			else
-			    _try_endup(sprite, boundary, location);
+			{
+			    boundary[1] += data.split_value;
+			    _walking_up(sprite, boundary, location);
+			}
+
 		    }
 		}
 
