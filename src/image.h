@@ -150,7 +150,7 @@ namespace gb
 		return y;
 	    }
 	    
-	    void _walking_up(const Sprite& sprite, Side (&boundary)[2], std::uint32_t (&location)[2])
+	    void _walking_up(const Sprite& sprite, Side (&boundary)[2], Side (&location)[2])
 	    {
 		/*walk up to different branch. because of always traversing left child first, 
 		  so parent's right child is always untraversed branch, unless i am at traversing
@@ -169,9 +169,10 @@ namespace gb
 				break;
 			    else//childNode is at right of parentNode
 			    {
-				const axis split_axis = childNode->data.split_axis;
-				const Side split_value = childNode->data.split_value;
-				boundary[split_axis] += split_value;
+				const axis split_axis = parentNode->data.split_axis;
+				const Side split_value = parentNode->data.split_value;
+				if(split_axis == axis::x)
+				    boundary[split_axis] += split_value;
 				location[split_axis] -= split_value;
 				childNode = parentNode;
 				parentNode = childNode->parent;
@@ -184,17 +185,49 @@ namespace gb
 			      if root is X direcion, then all nodes are in the right
 			      of the root
 			    */
-			    assert(true);
+			    assert(false);
 		    }
-		    //found, do insert again
+		    //found, go to right
+		    assert(parentNode->data.split_axis == axis::y);//X's left never be traversed
+		    //find boundary's y bottom
+		    binary_bin_packing_node* bottomYChildNode = parentNode;
+		    binary_bin_packing_node* bottomYNode = bottomYChildNode->parent;
+		    Side bottomY = std::numeric_limits<Side>::max();
+		    for(;;)
+		    {
+			if(bottomYNode == nullptr)//hitted the root
+			    break;
+			else if(bottomYChildNode == bottomYNode->l)
+			{
+			    //X's left never be traversed
+			    assert(bottomYNode->data.split_axis == axis::y);
+			    bottomY = bottomYNode->data.split_value;
+			    break;
+			}
+			
+			bottomYChildNode = bottomYNode;
+			bottomYNode = bottomYChildNode->parent;
+		    }
 		    binary_tree_node*& rightNode = parentNode->r;
+		    const Side split_value = parentNode->data.split_value;
+		    boundary[1] = bottomY - split_value;
+		    location[1] += split_value;
+		    if(sprite.width <= boundary[0] && sprite.height <= boundary[1])
+		    {
 		    if(rightNode != nullptr)
 			((binary_bin_packing_node*)rightNode)->insert(sprite, boundary, location);
 		    else
 			rightNode = _new_branch(sprite, parentNode);
+		    }
+		    else//back from right
+		    {
+			location[1] -= split_value;
+			parentNode->_walking_up(sprite, boundary, location);
+		    }
+			
 	    }
 	public:
-	    void insert(const Sprite& sprite, Side (&boundary)[2], std::uint32_t (&location)[2])
+	    void insert(const Sprite& sprite, Side (&boundary)[2], Side (&location)[2])
 	    {
 		if(data.split_axis == axis::x)
 		{
@@ -251,40 +284,41 @@ namespace gb
 
 	    }
 
-	    Side bin_height(Side height = 0)const
+	    Side bin_height()const
 	    {
 		assert(data.split_axis == axis::y);
+		Side rChildHeight = 0;
 		if(r != nullptr)
-		    height += ((binary_bin_packing_node*)r)->bin_height();
-		else
-		    return data.split_value;;
+		    rChildHeight = ((binary_bin_packing_node*)r)->bin_height();
+
+		return rChildHeight + data.split_value;
 	    }
 
 	    binary_bin_packing_node* parent;//parent
 	    binay_bin_packing_node_data<Side> data;
 	};
 
-	template<typename T>
-	array_2d<T> packing(std::vector<array_2d<T>>& sprites, const T fixedWidth = 0)
+	template<typename Sprite, typename Pixel>
+	array_2d<Pixel> packing(std::vector<Sprite>& sprites, const std::uint32_t fixedWidth = 0)
 	{
 	    //pre. sort sprites by height?
-	    auto height_compare = [](const array_2d<T>& l, const array_2d<T>& r)
+	    auto height_compare = [](const array_2d<Sprite>& l, const array_2d<Sprite>& r)
 		{
-		    return l.height < r.height;
+		    return r.height < l.height;
 		};
 	    
 	    std::sort(sprites.begin(), sprites.end(), height_compare);
 
-	    T width = fixedWidth;
-	    T maxWidth = width;
-	    T area(0);
-	    if(fixedWidth == (T)0)
+	    std::uint32_t width = fixedWidth;
+	    std::uint32_t maxWidth = width;
+	    std::uint64_t area(0);
+	    if(fixedWidth == 0)
 	    {
 		std::for_each(sprites.begin(),
 			      sprites.end(),
-			      [&maxWidth, &area](array_2d<T>& sprite)
+			      [&maxWidth, &area](array_2d<Sprite>& sprite)
 				  {
-				      const T width = sprite.width;
+				      const std::uint32_t width = sprite.width;
 				      if(maxWidth < width)
 					  maxWidth = width;
 				      area += width * sprite.height;
@@ -293,9 +327,12 @@ namespace gb
 			      if(width < maxWidth)
 				  width = maxWidth;
 	    }
+
+	    if(width == 0)
+		return;
 	    
 	    //1. build binary bin packing tree
-	    binary_bin_packing_node<std::uint32_t, array_2d<T>> root(
+	    binary_bin_packing_node<std::uint32_t, array_2d<Sprite>> root(
 		binay_bin_packing_node_data<std::uint32_t>::axis::x,
 		0,
 		nullptr);//all children will be at right of root
@@ -304,7 +341,7 @@ namespace gb
 	    std::vector<std::array<std::uint32_t, 2>> locations;
 	    std::for_each(sprites.begin(),
 			  sprites.end(),
-			  [width, &root, &locations](array_2d<T>& sprite)
+			  [width, &root, &locations](array_2d<Sprite>& sprite)
 			  {
 			      std::uint32_t location[2]{0, 0};
 			      std::uint32_t boundary[2] =
@@ -314,14 +351,22 @@ namespace gb
 			      locations.push_back({location[0], location[1]});
 			  });
 
-	    T height = root.bin_height();
+	    std::uint32_t height = ((binary_bin_packing_node<std::uint32_t, array_2d<Sprite>>*)(root.r))->bin_height();
 
-	    array_2d<T> bin(width, height);
+	    array_2d<Pixel> bin(height, width);
 	    
 	    //2.fill up bin
 	    for(int i = 0; i < sprites.size(); i++)
 	    {
-		bin.insert(locations[i], sprites[i]);
+		Sprite& sprite = sprites[i];
+		std::array<std::uint32_t, 2>& location = locations[i];
+		bin.insert(location, sprite.data());
+		const float left = location[0];
+		const float top = location[1];
+		sprite.uv_l = left / width;
+		sprite.uv_t = top / height;
+		sprite.uv_r = (left + sprite.width) / width;
+		sprite.uv_b = (top + sprite.height) / height;
 	    }
 
 	    return bin;

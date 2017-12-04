@@ -279,15 +279,18 @@ namespace gb
 	private:
 	    struct _proxy
 	    {
-		_proxy(T* data):
-		    _data(data)
+		_proxy(T* data, const std::uint32_t col):
+		    _data(data),
+		    _col(col)
 		    {}
-		T& operator[](const std::uint32_t col_)
+		T& operator[](const std::uint32_t colIdx)
 		    {
-			return _data[col_];
+			assert(colIdx < _col);
+			return _data[colIdx];
 		    }
 
 		T* const _data;
+		std::uint32_t _col;
 	    };
 
 	public:
@@ -328,10 +331,14 @@ namespace gb
 	    	    _data = other._data;
 		    other._data = nullptr;
 	    	}
-	    _proxy operator[](const std::uint32_t row_)
+	    _proxy operator[](const std::uint32_t rowIdx)
 		{
-		    return _proxy(_data + row_ * col);
+		    assert(rowIdx < row);
+		    return _proxy(_data + rowIdx * col, col);
 		}
+	    /*
+	     *@param, location, location[0]: col idx, location[1]: row idx.
+	     */
 	    void insert(const std::array<std::uint32_t, 2>& location, array_2d<T>& other)
 		{
 		    const std::uint32_t o_x = location[0];
@@ -343,7 +350,7 @@ namespace gb
 		    {
 			for(int j = 0; j < width; j++)
 			{
-			    this->operator[](o_x)[o_y + j] = other[i][j];
+			    this->operator[](o_y + i)[o_x + j] = other[i][j];
 			}
 		    }
 		}
