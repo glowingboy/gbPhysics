@@ -302,7 +302,7 @@ namespace gb
 	array_2d<Pixel> packing(std::vector<Sprite>& sprites, const std::uint32_t fixedWidth = 0)
 	{
 	    //pre. sort sprites by height?
-	    auto height_compare = [](const array_2d<Sprite>& l, const array_2d<Sprite>& r)
+	    auto height_compare = [](const Sprite& l, const Sprite& r)
 		{
 		    return r.height < l.height;
 		};
@@ -316,7 +316,7 @@ namespace gb
 	    {
 		std::for_each(sprites.begin(),
 			      sprites.end(),
-			      [&maxWidth, &area](array_2d<Sprite>& sprite)
+			      [&maxWidth, &area](Sprite& sprite)
 				  {
 				      const std::uint32_t width = sprite.width;
 				      if(maxWidth < width)
@@ -329,10 +329,10 @@ namespace gb
 	    }
 
 	    if(width == 0)
-		return;
+		throw "width == 0";
 	    
 	    //1. build binary bin packing tree
-	    binary_bin_packing_node<std::uint32_t, array_2d<Sprite>> root(
+	    binary_bin_packing_node<std::uint32_t, Sprite> root(
 		binay_bin_packing_node_data<std::uint32_t>::axis::x,
 		0,
 		nullptr);//all children will be at right of root
@@ -341,7 +341,7 @@ namespace gb
 	    std::vector<std::array<std::uint32_t, 2>> locations;
 	    std::for_each(sprites.begin(),
 			  sprites.end(),
-			  [width, &root, &locations](array_2d<Sprite>& sprite)
+			  [width, &root, &locations](Sprite& sprite)
 			  {
 			      std::uint32_t location[2]{0, 0};
 			      std::uint32_t boundary[2] =

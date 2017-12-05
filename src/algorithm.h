@@ -302,7 +302,11 @@ namespace gb
 			_data = nullptr;
 		    }
 		}
-	    array_2d() = delete;
+	    array_2d():
+		row(0),
+		col(0),
+		_data(nullptr)
+		{}
 	    array_2d(const std::uint32_t row_, const std::uint32_t col_):
 		row(row_),
 		col(col_),
