@@ -358,6 +358,8 @@ namespace gb
 			}
 		    }
 		}
+
+	    const T* data()const { return _data; }
 	    union
 	    {
 		std::uint32_t row;
