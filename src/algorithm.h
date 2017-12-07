@@ -312,7 +312,7 @@ namespace gb
 		col(col_),
 		_data(new T[row_ * col_]{0})
 		{}
-	    
+
 	    template<typename ... Args>
 	    array_2d(const std::uint32_t row_, const std::uint32_t col_, Args ... args):
 		row(row_),
@@ -340,6 +340,48 @@ namespace gb
 		    assert(rowIdx < row);
 		    return _proxy(_data + rowIdx * col, col);
 		}
+
+	    void realloc(const std::uint32_t row_, const std::uint32_t col_)
+		{
+		    std::uint32_t old_row = row;
+		    std::uint32_t old_col = col;
+		    row = row_;
+		    col = col_;
+		    T* tmp = new T[row * col]{0};
+		    if(_data != nullptr)
+		    {
+			if(old_row > row)
+			    old_row = row;
+			if(old_col > col)
+			    old_col = col;
+
+			for(std::uint32_t i = 0; i < old_row; i++)
+			{
+			    for(std::uint32_t j = 0; j < old_col; j++)
+			    {
+				tmp[i][j] = _data[i][j];
+			    }
+			}
+
+			delete [] _data;
+			_data = nullptr;
+		    }
+
+		    _data = tmp;
+		}
+
+	    void assign(const std::uint32_t row_, const std::uint32_t col_, T* data)
+		{
+		    row = row_;
+		    col = col_;
+		    if(_data != nullptr)
+		    {
+			delete [] _data;
+			_data = nullptr;
+		    }
+		    _data = data;
+		}
+	    
 	    /*
 	     *@param, location, location[0]: col idx, location[1]: row idx.
 	     */
@@ -350,9 +392,9 @@ namespace gb
 		    const std::uint32_t height = other.height;
 		    const std::uint32_t width = other.width;
 		    
-		    for(int i = 0; i < height; i++)
+		    for(std::uint32_t i = 0; i < height; i++)
 		    {
-			for(int j = 0; j < width; j++)
+			for(std::uint32_t j = 0; j < width; j++)
 			{
 			    this->operator[](o_y + i)[o_x + j] = other[i][j];
 			}
