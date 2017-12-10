@@ -167,7 +167,7 @@ namespace gb
 
 		    static auto _otherSideCheck = [&]()->bool
 			{
-			    const key_t sqDistCheck = std::pow(std::abs(spKey - curNodeKey), 2);
+			    const key_t sqDistCheck = (key_t)std::pow(spKey - curNodeKey, 2);
 			    return sqDistCheck <= bestSqDist;
 			};
 			

@@ -1,5 +1,6 @@
 #include "algorithm.h"
 #include <array>
+#include <vector>
 using namespace gb::math;
 using namespace gb::algorithm;
 

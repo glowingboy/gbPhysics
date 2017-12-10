@@ -18,7 +18,7 @@ array_2d<std::uint8_t> gb::image::signed_distance_field(const bit_vector& img,
     const std::uint32_t sdfW = sdf.width;
     const std::uint32_t sdfH = sdf.height;
 	    
-    std::int64_t sqMaxDist = std::pow(sdfW, 2) + std::pow(sdfH, 2);
+    std::int64_t sqMaxDist = (std::int64_t)std::pow(sdfW, 2) + (std::int64_t)std::pow(sdfH, 2);
 
     interval_mapper<std::int64_t, std::uint8_t> mapper(-sqMaxDist, sqMaxDist, 0, 255);
 	    

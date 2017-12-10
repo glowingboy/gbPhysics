@@ -29,7 +29,7 @@ void bit_vector::realloc(const size_t capacity)
     
     if(cpSize != 0)
     {
-	const std::uint8_t preFullByteSize = cpSize / 8 ;
+	const size_t preFullByteSize = cpSize / 8 ;
 	memcpy(newData, _data, preFullByteSize);
 
 	//tail fragment bits
@@ -67,7 +67,7 @@ void bit_vector::insert(const size_t beginIdx, const size_t size, const std::uin
     {
 	std::uint8_t head_bit_size = 8 - head_bit_idx;
 	if(leftSize < head_bit_size)
-	    head_bit_size = leftSize;
+	    head_bit_size = (std::uint8_t)leftSize;
 	
 	std::uint8_t& curByte = _data[byteIdx];
 	for(int i = 0; i < head_bit_size; i ++)

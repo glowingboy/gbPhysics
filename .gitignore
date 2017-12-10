@@ -34,3 +34,6 @@
 build/
 *~
 gbPhysicsConfig.h
+*Win32/
+*CMakeFiles/
+*.dir/

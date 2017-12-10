@@ -11,9 +11,9 @@ namespace gb
 	  T ret;
 	  memset(&ret, 0, sizeof(T));
 
-	  for(int i = 0; i < dimension; i++)
+	  for(std::uint8_t i = 0; i < dimension; i++)
 	  {
-	      ret += std::pow(a[i] - b[i], 2);
+	      ret += (T)std::pow(a[i] - b[i], 2);
 	  }
 
 	  return ret;
@@ -29,16 +29,16 @@ namespace gb
 	      _interval_b_l(interval_b_l)
 	      {
 		  assert((interval_a_r - interval_a_l) != 0);
-		  _scale = (interval_b_r - interval_b_l) / ( interval_a_r - interval_a_l);
+		  _scale = (double)(interval_b_r - interval_b_l) / ( interval_a_r - interval_a_l);
 	      }
-	  B map(const B value)
+	  B map(const A value)
 	      {
-		  return _interval_b_l + (value - _interval_a_l) * _scale;
+		  return _interval_b_l + (B)((value - _interval_a_l) * _scale);
 	      }
       private:
 	  const A _interval_a_l;
 	  const B _interval_b_l;
-	  float _scale;
+	  double _scale;
       };
 
   };

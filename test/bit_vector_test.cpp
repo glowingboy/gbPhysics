@@ -2,9 +2,9 @@
 
 int bit_vector_test(const unsigned int count = 1000)
 {
-    std::uint8_t bitArray[count];
+    std::uint8_t* bitArray = new std::uint8_t[count];
 
-    for(int i = 0; i < count; i++)
+    for(unsigned int i = 0; i < count; i++)
     {
 	bitArray[i] = rand() % 2;
     }
@@ -15,7 +15,7 @@ int bit_vector_test(const unsigned int count = 1000)
     std::uint8_t curVal = 0;
     size_t curValSize = 0;
     size_t curValIdx = 0;
-    for(int i = 0; i < count; i++)
+    for(unsigned int i = 0; i < count; i++)
     {
 	if(curVal != bitArray[i])
 	{
@@ -33,12 +33,13 @@ int bit_vector_test(const unsigned int count = 1000)
 
     bitVec.insert(curValIdx, curValSize, curVal);
     
-    for(int i = 0; i < count; i++)
+    for(unsigned int i = 0; i < count; i++)
     {
 	if(bitVec[i] != bitArray[i])
 	    return 1;
     }
     std::cout << std::endl;
 
+	delete[] bitArray;
     return 0;
 }

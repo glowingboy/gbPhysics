@@ -8,9 +8,9 @@ struct testData:public gb::algorithm::kd_key<int, 2>
 int kd_node_test(const unsigned int count = 1000)
 {
     
-    testData data[count];
+    testData* data = new testData[count];
 
-    for(int i = 0; i < count; i ++)
+    for(unsigned int i = 0; i < count; i ++)
     {
 	data[i].key[0] = rand() % count;
 	data[i].key[1] = rand() % count;
@@ -35,5 +35,6 @@ int kd_node_test(const unsigned int count = 1000)
     std::cout << "ret: " << "(" << ret->data.key[0] << ", " << ret->data.key[1] << ")" << std::endl;
     std::cout<< std::endl << "********************************" << std::endl;
 
+	delete[] data;
     return 0;
 }
