@@ -12,7 +12,12 @@ then
     exit 1
 fi
 
-cd ../build/
+cd ..
+if ! [ -d build ]
+then
+    mkdir build
+fi
+cd build
 
 if [ "$1" == "-r" ]
 then
@@ -21,7 +26,12 @@ fi
 
 cmake --build . --target install
 
-cd ../test/build/
+cd ../test
+if ! [ -d build ]
+then
+    mkdir build
+fi
+cd build
 
 if [ "$1" == "-r" ]
 then

@@ -212,7 +212,6 @@ namespace gb
 
 		    key_t bestSqDist = std::numeric_limits<key_t>::max();
 
-		    typedef void (*unwindfunc)(kd_node* node, bool bFromPath);
 		    while(!path.empty())
 		    {
 			_unwind(srchpnt, bestSqDist, ret, path.back(), true);

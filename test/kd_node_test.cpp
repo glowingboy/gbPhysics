@@ -30,7 +30,7 @@ int kd_node_test(const unsigned int count = 1000)
     sp.key[0] = 4;
     sp.key[1] = 1;
     gb::algorithm::kd_node<testData>* ret;
-    int dist = node.nearest_neighbour_search(sp, ret);
+    node.nearest_neighbour_search(sp, ret);
     assert(ret != nullptr);
     std::cout << "ret: " << "(" << ret->data.key[0] << ", " << ret->data.key[1] << ")" << std::endl;
     std::cout<< std::endl << "********************************" << std::endl;
