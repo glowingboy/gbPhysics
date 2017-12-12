@@ -417,5 +417,36 @@ namespace gb
 	private:
 	    T* _data;
 	};
+
+	template<typename T>
+	struct vec2
+	{
+	    union
+	    {
+		struct{ T x, y; };
+		struct{ T r, g; };
+		struct{ T s, t; };
+	    };
+	    std::uint8_t length()const
+		{
+		    return 2;
+		}
+	    T& operator[](std::uint8_t idx)
+		{
+		    assert(idx < this->length());
+		    return (&(this->x)[idx]);
+		}
+
+	    const T& operator[](std::uint8_t idx)const
+		{
+		    assert(idx < this->length());
+		    return (&(this->x)[idx]);
+		}
+	    void operator=(const vec2& other)
+		{
+		    x = other.x;
+		    y = other.y;
+		}
+	};
     }
 }
