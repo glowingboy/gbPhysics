@@ -3,10 +3,10 @@ project(gbPhysics)
 
 include(gbCMake/gbCommon.cmake)
 
-set(VERSION_MAJOR 0)
-set(VERSION_MINOR 0)
+set(GB_PHYSICS_VERSION_MAJOR 0)
+set(GB_PHYSICS_VERSION_MINOR 0)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gbPhysicsConfig.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/gbPhysicsConfig.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 set(gb_phy_srcs)
 gb_add_class(algorithm src gb_phy_srcs)
@@ -36,6 +36,6 @@ foreach(src IN LISTS gb_phy_srcs)
   endif()
 endforeach()
 
-set(headers ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/src/gbPhysicsConfig.h)
+set(headers ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 install(FILES ${headers} DESTINATION .)

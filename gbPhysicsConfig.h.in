@@ -1,5 +1,0 @@
-//gbPhysics config file
-
-//version
-#define GB_PHYSICS_VERSION_MAJOR @VERSION_MAJOR@
-#define GB_PHYSICS_VERSION_MINOR @VERSION_MINOR@
