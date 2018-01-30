@@ -40,7 +40,7 @@ namespace gb
 		lenSide(upper.x - lower.x)
 		{}
 
-	    bool isCollided(const aabb & o) const
+	    bool intersect(const aabb & o) const
 		{
 		    const vec3<T> (&o_diagonal)[2] = o.diagonal;
 		    for(std::uint8_t i = 0; i < 3; i++)
@@ -52,7 +52,11 @@ namespace gb
 		    }
 		    return true;
 		}
-	    bool isInside(const aabb& o)const
+		bool interset(const spherebb<T> o)
+		{
+
+		}
+	    bool contain(const aabb& o)const
 		{
 		    if(o._lenSide > lenSide)
 			return false;
@@ -72,11 +76,12 @@ namespace gb
 			return true;
 		    }
 		}
-	    bool isInside(const spherebb<T>& o) const
+	    bool contain(const spherebb<T>& o) const
 		{
 		    if((o.radius * 2) > lenSide)
 			return false;
-		    const vec3<T> sbb_lower(o.centre - o.radius);
+			//TODO:
+		  /*  const vec3<T> sbb_lower(o.centre - o.radius);
 		    const vec3<T> sbb_upper(o.centre + o.radius);
 
 		    for(std::uint8_t i = 0; i < 3; i ++)
@@ -86,7 +91,7 @@ namespace gb
 			if(sbb_upper[i] > diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX][i])
 			    return false;
 		    }
-		    return true;
+		    return true;*/
 		}
 	    vec3<T> diagonal[2];
 	    T lenSide;

@@ -104,7 +104,7 @@ namespace gb
 	struct kd_node : public binary_tree_node
 	{
 	    typedef typename Data::key_t key_t;
-	    kd_node(Data* data_, size_t size, size_t depth = 0)
+	    kd_node(Data* data_, size_t size, size_t depth = 0) // offline algorithm
 		{
 		    assert((data_ != nullptr && size != 0));
 
@@ -448,11 +448,6 @@ namespace gb
 		    assert(idx < this->length());
 		    return ((&(this->x))[idx]);
 		}
-	    void operator=(const vec2& other)
-		{
-		    x = other.x;
-		    y = other.y;
-		}
 	};
 
 	template<typename T = float>
@@ -485,12 +480,6 @@ namespace gb
 		    assert(idx < this->length());
 		    return ((&(this->x))[idx]);
 		}
-	    void operator=(const vec3& other)
-		{
-		    x = other.x;
-		    y = other.y;
-		    z = other.z;
-		}
 	    vec3 operator+(const vec3& o)
 		{
 		    return vec3(x + o.x, y + o.y, z + o.z);
@@ -498,6 +487,16 @@ namespace gb
 	    vec3 operator-(const vec3& o)
 		{
 		    return vec3(x - o.x, y - o.y, z - o.z);
+		}
+	    template<typename S>
+	    vec3 operator*(const S scalar)
+		{
+		    return vec3(x * scalar, y * scalar, z * scalar);
+		}
+	    template<typename S>
+	    vec3 operator/(const S scalar)
+		{
+		    return vec3(x / scalar, y / scalar, z / scalar);
 		}
 	};
     }

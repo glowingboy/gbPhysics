@@ -37,3 +37,4 @@ gbPhysicsConfig.h
 *Win32/
 *CMakeFiles/
 *.dir/
+src/config.h

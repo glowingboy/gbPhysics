@@ -8,13 +8,15 @@ set(GB_PHYSICS_VERSION_MINOR 0)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
-set(gb_phy_srcs)
-gb_add_class(algorithm src gb_phy_srcs)
-gb_add_class(math src gb_phy_srcs)
-gb_add_class(image src gb_phy_srcs)
+set(srcs)
+gb_add_class(algorithm src srcs)
+gb_add_class(math src srcs)
+gb_add_class(image src srcs)
+gb_add_class(boundingbox src srcs)
+gb_add_class(sptree src srcs)
 
 add_library(gbPhysics STATIC
-  ${gb_phy_srcs}
+  ${srcs}
   )
 
 set_target_properties(gbPhysics
@@ -30,7 +32,7 @@ install(TARGETS gbPhysics ARCHIVE DESTINATION .)
 
 set(headers)
 
-foreach(src IN LISTS gb_phy_srcs)
+foreach(src IN LISTS srcs)
   if(src MATCHES ".*\\.h")
     set(headers ${headers} ${src})
   endif()
