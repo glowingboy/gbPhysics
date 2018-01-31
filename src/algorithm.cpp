@@ -4,10 +4,7 @@ using namespace gb::algorithm;
 
 void bit_vector::reserve(const size_t capacity)
 {
-    if(_data != nullptr)
-    {
-	delete [] _data;
-    }
+    delete [] _data;
 
     const size_t byteSize = capacity / 8 + (capacity % 8 == 0 ? 0 : 1);
 
@@ -43,8 +40,7 @@ void bit_vector::realloc(const size_t capacity)
 	}
     }
 
-    if(_data != nullptr)
-	delete [] _data;
+    delete [] _data;
 
     _data = newData;
 }

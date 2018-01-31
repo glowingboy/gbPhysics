@@ -49,12 +49,8 @@ namespace gb
 		    for(std::uint8_t i = 0; i < 8; i++)
 		    {
 			octree* & child = _children[i];
-			if(child != nullptr)
-			{
-			    delete child;
-			    child = nullptr;
-			}
-			    
+			delete child;
+			child = nullptr;
 		    }
 		}
 	public:

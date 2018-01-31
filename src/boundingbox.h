@@ -1,7 +1,7 @@
 #pragma once
 
 #include "algorithm.h"
-
+#include <limits>
 namespace gb
 {
     namespace physics
@@ -13,16 +13,28 @@ namespace gb
 	{
 	    spherebb():
 		centre(0),
-		radius(0)
+		radius(0),
+		sqRadius(0)
 		{}
 	    spherebb(const vec3<T>& centre_, const T radius_):
 		centre(centre_),
-		radius(radius_)
-		{}
+		radius(radius_),
+		sqRadius(std::pow(radius_, 2))
+		{
+		    assert(sqrtMaxR >= radius_);
+		}
 		
 	    vec3<T> centre;
 	    T radius;
+	    T sqRadius;
+#if ! defined(NDEBUG)
+	    static constexpr T sqrtMaxR;
+#endif
 	};
+#if ! defined(NDEBUG)
+	template<typename T>
+	constexpr T spherebb::sqrtMaxR = std::sqrt(std::numeric_limits<T>::max());
+#endif
 	
 #define GB_PHYSICS_DIAGONAL_LOWER_IDX 0
 #define GB_PHYSICS_DIAGONAL_UPPER_IDX 1
@@ -43,18 +55,13 @@ namespace gb
 	    bool intersect(const aabb & o) const
 		{
 		    const vec3<T> (&o_diagonal)[2] = o.diagonal;
-		    for(std::uint8_t i = 0; i < 3; i++)
-		    {
-			if(diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX][i] < o_diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX][i])
-			    return false;
-			if(diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX][i] > o_diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX][i])
-			    return false;
-		    }
-		    return true;
+		    return (diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX] < o_diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX])
+			&&(diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX] > o_diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX]);
 		}
 		bool interset(const spherebb<T> o)
 		{
-
+		    // if centre of sphere inside of bb
+		    if(o.centre >= )
 		}
 	    bool contain(const aabb& o)const
 		{
@@ -78,20 +85,8 @@ namespace gb
 		}
 	    bool contain(const spherebb<T>& o) const
 		{
-		    if((o.radius * 2) > lenSide)
-			return false;
-			//TODO:
-		  /*  const vec3<T> sbb_lower(o.centre - o.radius);
-		    const vec3<T> sbb_upper(o.centre + o.radius);
-
-		    for(std::uint8_t i = 0; i < 3; i ++)
-		    {
-			if(sbb_lower[i] < diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX][i])
-			    return false;
-			if(sbb_upper[i] > diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX][i])
-			    return false;
-		    }
-		    return true;*/
+		    // if centre inside bb
+		    if()
 		}
 	    vec3<T> diagonal[2];
 	    T lenSide;

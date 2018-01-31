@@ -35,6 +35,6 @@ int kd_node_test(const unsigned int count = 1000)
     std::cout << "ret: " << "(" << ret->data.key[0] << ", " << ret->data.key[1] << ")" << std::endl;
     std::cout<< std::endl << "********************************" << std::endl;
 
-	delete[] data;
+    delete[] data;
     return 0;
 }

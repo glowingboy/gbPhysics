@@ -35,17 +35,11 @@ namespace gb
 		}
 	    virtual ~binary_tree_node()
 		{
-		    if (l != nullptr)
-		    {
-			delete l;
-			l = nullptr;
-		    }
+		    delete l;
+		    l = nullptr;
 
-		    if (r != nullptr)
-		    {
-			delete r;
-			r = nullptr;
-		    }
+		    delete r;
+		    r = nullptr;
 		}
 	    template<typename Func>
 	    void traverse_in_order(Func& func)
@@ -237,11 +231,8 @@ namespace gb
 		{}
 	    inline ~bit_vector()
 		{
-		    if (_data != nullptr)
-		    {
-			delete[] _data;
-			_data = nullptr;
-		    }
+		    delete[] _data;
+		    _data = nullptr;
 		}
 	    void reserve(const size_t capacity);
 	    void realloc(const size_t capacity);
@@ -296,11 +287,8 @@ namespace gb
 	public:
 	    ~array_2d()
 		{
-		    if (_data != nullptr)
-		    {
-			delete[] _data;
-			_data = nullptr;
-		    }
+		    delete[] _data;
+		    _data = nullptr;
 		}
 	    array_2d() :
 		row(0),
@@ -374,11 +362,7 @@ namespace gb
 		{
 		    row = row_;
 		    col = col_;
-		    if (_data != nullptr)
-		    {
-			delete[] _data;
-			_data = nullptr;
-		    }
+		    delete[] _data;
 		    _data = data;
 		}
 
@@ -448,6 +432,18 @@ namespace gb
 		    assert(idx < this->length());
 		    return ((&(this->x))[idx]);
 		}
+	    bool operator<(const vec2& o)
+		{
+		    return (x < o.x) && (y < o.y);
+		}
+	    bool operator>(const vec2& o)
+		{
+		    return (x > o.x) && (y > o.y);
+		}
+	    bool operator<=(const vec2& o)
+		{
+		    
+		}
 	};
 
 	template<typename T = float>
@@ -497,6 +493,15 @@ namespace gb
 	    vec3 operator/(const S scalar)
 		{
 		    return vec3(x / scalar, y / scalar, z / scalar);
+		}
+
+	    bool operator<(const vec3& o)
+		{
+		    return (x < o.x) && (y < o.y) && (z < o.z);
+		}
+	    bool operator>(const vec3& o)
+		{
+		    return (x > o.x) && (y > o.y) && (z > o.z);
 		}
 	};
     }

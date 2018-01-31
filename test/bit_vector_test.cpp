@@ -40,6 +40,6 @@ int bit_vector_test(const unsigned int count = 1000)
     }
     std::cout << std::endl;
 
-	delete[] bitArray;
+    delete[] bitArray;
     return 0;
 }
