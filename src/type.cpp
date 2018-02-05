@@ -1,6 +1,7 @@
-#include "algorithm.h"
+#include "type.h"
+#include <cstring>
 
-using namespace gb::algorithm;
+using namespace gb::physics;
 
 void bit_vector::reserve(const size_t capacity)
 {
@@ -9,7 +10,7 @@ void bit_vector::reserve(const size_t capacity)
     const size_t byteSize = capacity / 8 + (capacity % 8 == 0 ? 0 : 1);
 
     _data = new std::uint8_t[byteSize];
-    memset(_data, 0, byteSize);
+    std::memset(_data, 0, byteSize);
 
     _capacity = byteSize * 8;
     _curSize = 0;

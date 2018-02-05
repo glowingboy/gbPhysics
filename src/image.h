@@ -1,8 +1,9 @@
-#include "algorithm.h"
-#include <array>
+#include "sptree.h"
+#include "math.h"
+
 #include <vector>
 using namespace gb::math;
-using namespace gb::algorithm;
+using namespace gb::physics;
 
 namespace gb
 {

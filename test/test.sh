@@ -1,11 +1,5 @@
 #!/bin/bash
 
-if [ $EUID -ne 0 ]
-then
-    echo "need run this script as root"
-    exit 1
-fi
-
 if ! [ -f ./test.sh ]
 then
     echo "need run this in test dir"
@@ -19,7 +13,7 @@ then
 fi
 cd build
 
-if [ "$1" == "-r" ]
+if [ "$1" == "-c" ]
 then
     rm -rfv ./* && cmake ..
 fi
@@ -33,7 +27,7 @@ then
 fi
 cd build
 
-if [ "$1" == "-r" ]
+if [ "$1" == "-c" ]
 then
     rm -rfv ./* && cmake ..
 fi

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <cmath>
 #include <cstring>
 namespace gb
@@ -6,7 +7,7 @@ namespace gb
   namespace math
   {
       template<typename T, std::uint8_t dimension>
-      T square_distance(const T* a, const T* b)
+      T square_distance(const T* a , const T* b)
       {
 	  T ret;
 	  memset(&ret, 0, sizeof(T));

@@ -9,7 +9,7 @@ set(GB_PHYSICS_VERSION_MINOR 0)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 set(srcs)
-gb_add_class(algorithm src srcs)
+gb_add_class(type src srcs)
 gb_add_class(math src srcs)
 gb_add_class(image src srcs)
 gb_add_class(boundingbox src srcs)
