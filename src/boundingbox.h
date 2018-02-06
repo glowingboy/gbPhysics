@@ -76,7 +76,7 @@ struct aabb
 	    return (diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX] < o_diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX])
 		&&(diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX] > o_diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX]);
 	}
-    bool interset(const spherebb<T> o)
+    bool intersect(const spherebb<T> o) const
 	{
 	    vec3<T> extend_dia[2] = {diagonal[0], diagonal[1]};
 	    const vec3<T> delta = o.radius;

@@ -220,7 +220,7 @@ struct kd_node : public binary_tree_node
 /*
  *@param _Intersect, bool _Intersect(_Ele, _bb).
  */
-template <typename _Ele, typename _Intersect, typename _BB_Unit = float>
+template <typename _Ele, typename _Intersect, typename _BB_Unit = Float>
 class octree
 {
 public:

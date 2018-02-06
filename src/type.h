@@ -1,4 +1,7 @@
 // fundamental types
+
+#pragma once
+
 #include "physicsNS.h"
 #include <cassert>
 #include <array>
@@ -42,6 +45,11 @@ union Float
 	    return false;
 	}
 
+    inline bool operator!=(const Float& o) const
+	{
+	    return ! operator==(o);
+	}
+
     inline bool operator <=(const Float & o) const
 	{
 	    return (this->f < o.f) || (this->f == o.f);
@@ -51,7 +59,7 @@ union Float
 	    return (this->f > o.f) || (this->f == o.f);
 	}
 
-    inline operator float&()
+    inline operator float () const
 	{
 	    return f;
 	}
@@ -244,7 +252,7 @@ private:
 
 
 
-template<typename T = float>
+template<typename T>
 struct vec2
 {
     union
@@ -291,7 +299,9 @@ struct vec2
 	}
 };
 
-template<typename T = float>
+typedef vec2<Float> vec2F;
+
+template<typename T>
 struct vec3
 {
     union
@@ -336,33 +346,43 @@ struct vec3
 	    assert(idx < this->length());
 	    return ((&(this->x))[idx]);
 	}
-    vec3 operator+(const vec3& o)
+    vec3 operator+(const vec3& o) const
 	{
 	    return vec3(x + o.x, y + o.y, z + o.z);
 	}
-    vec3 operator-(const vec3& o)
+    vec3 operator-(const vec3& o) const
 	{
 	    return vec3(x - o.x, y - o.y, z - o.z);
 	}
     template<typename S>
-    vec3 operator*(const S scalar)
+    vec3 operator*(const S scalar) const
 	{
 	    return vec3(x * scalar, y * scalar, z * scalar);
 	}
     template<typename S>
-    vec3 operator/(const S scalar)
+    vec3 operator/(const S scalar) const
 	{
 	    return vec3(x / scalar, y / scalar, z / scalar);
 	}
 
-    bool operator<(const vec3& o)
+    bool operator<(const vec3& o) const
 	{
 	    return (x < o.x) && (y < o.y) && (z < o.z);
 	}
-    bool operator>(const vec3& o)
+    bool operator<=(const vec3& o) const
+	{
+	    return (x <= o.x) && (y < o.y) && (z < o.z);
+	}
+    bool operator>(const vec3& o) const
 	{
 	    return (x > o.x) && (y > o.y) && (z > o.z);
 	}
+    bool operator >=(const vec3& o) const
+	{
+	    return (x >= o.x) && (y > o.y) && (z >= o.z);
+	}
 };
+
+typedef vec3<Float> vec3F;
 
 GB_PHYSICS_NS_END
