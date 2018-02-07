@@ -61,13 +61,13 @@ template<typename T = Float>
 struct aabb
 {
     aabb():
-	diagonal{0},
+	diagonal{vec3<T>(0)},
 	lenSide(0)
 	{}
 
     aabb(const vec3<T>& lower, const vec3<T>& upper):
 	diagonal{lower, upper},
-	lenSide(upper.x - lower.x)
+	lenSide(upper - lower)
 	{}
 
     bool intersect(const aabb & o) const
@@ -78,16 +78,16 @@ struct aabb
 	}
     bool intersect(const spherebb<T> o) const
 	{
-	    vec3<T> extend_dia[2] = {diagonal[0], diagonal[1]};
+	    vec3<T> exterior_dia[2] = {diagonal[0], diagonal[1]};
 	    const vec3<T> delta = o.radius;
-	    extend_dia[0] = extend_dia[0] - delta;
-	    extend_dia[1] = extend_dia[1] + delta;
-	    return (o.centre >= extend_dia[GB_PHYSICS_DIAGONAL_LOWER_IDX])
-		&& (o.centre <= extend_dia[GB_PHYSICS_DIAGONAL_UPPER_IDX]);
+	    exterior_dia[0] = exterior_dia[0] - delta;
+	    exterior_dia[1] = exterior_dia[1] + delta;
+	    return (o.centre >= exterior_dia[GB_PHYSICS_DIAGONAL_LOWER_IDX])
+		&& (o.centre <= exterior_dia[GB_PHYSICS_DIAGONAL_UPPER_IDX]);
 	}
     bool contain(const aabb& o)const
 	{
-	    if(o._lenSide > lenSide)
+	    if(o.lenSide > lenSide)
 		return false;
 	    else
 	    {
@@ -107,15 +107,19 @@ struct aabb
 	}
     bool contain(const spherebb<T>& o) const
 	{
-	    vec3<T> shrink_dia[2] = {diagonal[0], diagonal[1]};
+	    vec3<T> interior_dia[2] = {diagonal[0], diagonal[1]};
 	    const vec3<T> delta = o.radius;
-	    shrink_dia[0] = shrink_dia[0] + delta;
-	    shrink_dia[1] = shrink_dia[1] - delta;
-	    return (o.centre >= shrink_dia[GB_PHYSICS_DIAGONAL_LOWER_IDX])
-		&& (o.centre <= shrink_dia[GB_PHYSICS_DIAGONAL_UPPER_IDX]);
+	    interior_dia[0] = interior_dia[0] + delta;
+	    interior_dia[1] = interior_dia[1] - delta;
+	    if(interior_dia[GB_PHYSICS_DIAGONAL_LOWER_IDX]
+	       > interior_dia[GB_PHYSICS_DIAGONAL_UPPER_IDX])
+		return false;
+	    else
+		return (o.centre >= interior_dia[GB_PHYSICS_DIAGONAL_LOWER_IDX])
+		    && (o.centre <= interior_dia[GB_PHYSICS_DIAGONAL_UPPER_IDX]);
 	}
     vec3<T> diagonal[2];
-    T lenSide;
+    vec3<T> lenSide;
 };
 
 GB_PHYSICS_NS_END

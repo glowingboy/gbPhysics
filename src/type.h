@@ -8,6 +8,7 @@
 #include <cfloat>
 #include <cstdint>
 #include <cmath>
+#include <limits>
 
 GB_PHYSICS_NS_BEGIN
 
@@ -25,9 +26,9 @@ union Float
 	std::uint32_t sign : 1;
     }parts;
 #endif
-    Float(const float f_):f(f_) {}
-    Float():f(.0f) {}
+    constexpr Float(const float f_) noexcept :f(f_) {}
     
+    Float():f(.0f) {}
     // relative epsilon method
     inline bool operator==(const Float& o) const
 	{
@@ -59,11 +60,11 @@ union Float
 	    return (this->f > o.f) || (this->f == o.f);
 	}
 
-    inline operator float () const
+    inline constexpr operator float () const
 	{
 	    return f;
 	}
-
+    
 };
 
 //**************** end of fundamental type ****************
@@ -317,7 +318,7 @@ struct vec3
 	z(z_)
 	{} 
     
-    vec3(const T& o):
+    constexpr vec3(const T& o):
 	x(o),
 	y(o),
 	z(o)
@@ -386,3 +387,21 @@ struct vec3
 typedef vec3<Float> vec3F;
 
 GB_PHYSICS_NS_END
+
+// std::numeric_limits extension
+namespace std
+{
+    template <>
+    class numeric_limits<gb::physics::Float>
+    {
+    public:
+	inline static constexpr gb::physics::Float min() noexcept
+	    {
+		return gb::physics::Float(std::numeric_limits<float>::min());
+	    }
+	inline static constexpr gb::physics::Float max() noexcept
+	    {
+		return gb::physics::Float(std::numeric_limits<float>::max());
+	    }
+    };
+}

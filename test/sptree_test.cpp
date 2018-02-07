@@ -49,11 +49,11 @@ struct sptt
     sptt(const vec3F & centre, const float radius):
 	sbb(centre, radius)
 	{}
-    struct intersect
+    struct contain
     {
-	bool operator()(const sptt*& sptt, const aabb<>& o)
+	bool operator()(sptt* const & sptt, const aabb<>& o)
 	    {
-		return o.intersect(sptt->sbb);
+		return o.contain(sptt->sbb);
 	    }
     };
 
@@ -67,7 +67,7 @@ struct sptt
 std::string vec3_tostring(const vec3F& v)
 {
     char buf[64] = {'\0'};
-    sprintf(buf, "%f, %f, %f", v.x, v.y, v.z);
+    sprintf(buf, "%f, %f, %f", (float)(v.x), (float)(v.y), (float)(v.z));
     return std::string(buf);
 }
 
@@ -98,7 +98,7 @@ std::string aabb_tostring(const aabb<>& aabb)
     ret += "\t upper: ";
     ret += vec3_tostring(dia[1]);
     ret += "\t lenSide: ";
-    ret += float_tostring(aabb.lenSide);
+    ret += vec3_tostring(aabb.lenSide);
     ret += "\n";
     
     return ret;
@@ -109,25 +109,27 @@ int sptree_test(const std::uint32_t count = 100)
     kd_node_test(count);
     
     // octree test
-    octree<sptt*, sptt::intersect> oct(aabb<>(vec3F(0, 0, 0), vec3F(count, count, count)));
+    octree<sptt*, sptt::contain> oct(aabb<>(vec3F(0, 0, 0), vec3F(count, count, count)));
     
     for(std::uint32_t i = 0; i < count; i++)
     {
-	sptt* s = new sptt(vec3F(rand() % count, rand() % count, rand() % count), rand() % count);
-	octree<sptt*, sptt::intersect>* ret;
+	sptt* s = new sptt(vec3F(rand() % count, rand() % count, rand() % count), rand() % 20 * 0.01f);
+	octree<sptt*, sptt::contain>* ret;
 	oct.insert(s, ret);
 	std::cout << "sptt: " << sbb_tostring(s->sbb) << std::endl;
 	const aabb<>& octbb = ret->GetBB();
 	const std::set<sptt*>& eles = ret->GetElements();
 	std::cout << "octbb: " << aabb_tostring(octbb) << std::endl;
 	std::cout << "siblings: ";
-	std::for_each(eles.begin(), eles.end(), [](sptt* & ele)
+	std::for_each(eles.begin(), eles.end(), [](sptt* const & ele)
 		      {
 			  std::cout << " s@ " << sbb_tostring(ele->sbb);
 		      });
 
 	std::cout << std::endl;
     }
-    
+
+    ttt<int> x;
+    x.func();
     return 0;
 }
