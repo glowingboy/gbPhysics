@@ -51,9 +51,16 @@ struct sptt
 	{}
     struct contain
     {
-	bool operator()(sptt* const & sptt, const aabb<>& o)
+	bool operator()(const sptt * spt, const aabb<>& o) const
 	    {
-		return o.contain(sptt->sbb);
+		return o.contain(spt->sbb);
+	    }
+    };
+    struct arbitrary_point_getter
+    {
+	const vec3F& operator()(const sptt* sptt) const
+	    {
+		return sptt->sbb.centre;
 	    }
     };
 
@@ -103,18 +110,20 @@ std::string aabb_tostring(const aabb<>& aabb)
     
     return ret;
 }
+
 int sptree_test(const std::uint32_t count = 100)
 {
     // kd-tree test
     kd_node_test(count);
     
     // octree test
-    octree<sptt*, sptt::contain> oct(aabb<>(vec3F(0, 0, 0), vec3F(count, count, count)));
+    typedef octree<sptt*, sptt::contain, sptt::arbitrary_point_getter> octree_test;
+    octree_test oct(aabb<>(vec3F(0, 0, 0), vec3F(count, count, count)));
     
     for(std::uint32_t i = 0; i < count; i++)
     {
 	sptt* s = new sptt(vec3F(rand() % count, rand() % count, rand() % count), rand() % 20 * 0.01f);
-	octree<sptt*, sptt::contain>* ret;
+	octree_test* ret;
 	oct.insert(s, ret);
 	std::cout << "sptt: " << sbb_tostring(s->sbb) << std::endl;
 	const aabb<>& octbb = ret->GetBB();
@@ -129,7 +138,5 @@ int sptree_test(const std::uint32_t count = 100)
 	std::cout << std::endl;
     }
 
-    ttt<int> x;
-    x.func();
     return 0;
 }

@@ -220,15 +220,18 @@ struct kd_node : public binary_tree_node
 /*
  *@param _Intersect, bool _Intersect(_Ele, _bb).
  */
-template <typename _Ele, typename _Contain, typename _BB_Unit = Float>
+template <typename _Ele,
+	  typename _Contain,
+	  typename _ArbitraryPointGetter,
+	  typename _BB_Unit = Float>
 class octree
 {
 public:
-    octree(const aabb<_BB_Unit>& bb, const std::uint8_t lv = 0):
+    octree(const aabb<_BB_Unit>& bb):
 	_bb(bb)
 	,_childLenSide(_octanBB[0].lenSide)
+	,_centre(_octanBB[7].diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX])
 	,_children{nullptr}
-	,_level(lv)
 	{
 	    const vec3<_BB_Unit> (&diagonal)[2] = bb.diagonal;
 		    
@@ -236,6 +239,11 @@ public:
 	    const vec3<_BB_Unit> octanLen = (diagonal[1] - diagonal[0]) / 2;
 	    const vec3<_BB_Unit> lowers[2] = {diagonal[0], centre};
 
+	    // store octanBB.lower in (x_l, ((y_l, (z_l, z_u)), (y_u, ...)))(x_u, ...) order
+	    // 1st, split by x into (0, 3) (4, 7)
+	    // 2nd, split by y into (0, 1) (2, 3) (4, 5) (6, 7)
+	    // 3rd, split by z into ...
+	    // so the centre of bb is octanBB[7].dia.lower
 	    std::uint8_t idx = 0;
 	    for(std::uint8_t i = 0; i < 2; i++)
 	    {
@@ -276,29 +284,26 @@ public:
 	}
 
     // children insert
-    void _insert(_Ele & ele)
-	{
-	    if(_childLenSide > _minOctanLenSide)
+    void _insert(_Ele & ele, const vec3<_BB_Unit>& ap)
+    {
+	if(_childLenSide > _minOctanLenSide)
 	    {
-		for(std::uint8_t i = 0; i < 8; i++)
-		{
-		    const aabb<_BB_Unit>& octanBB = _octanBB[i];
-		    if(_ctn(ele, octanBB))
+		const std::uint8_t idx = _getPossiableOctanIdx(ap);
+		
+		const aabb<_BB_Unit>& octanBB = _octanBB[idx];
+		if(_ctn(ele, octanBB))
 		    {
-			// don't need compare again when next _insert
-		    
-			octree* & child = _children[i];
+			octree* & child = _children[idx];
 			
 			if(child != nullptr)
-			    child->_insert(ele);
+			    child->_insert(ele, ap);
 			else
-			{
-			    child = new octree(octanBB);
-			    child->_insert(ele);
-			}
+			    {
+				child = new octree(octanBB);
+				child->_insert(ele, ap);
+			    }
 			return;
 		    }
-		}
 	    }
 	    
 	    _eles.insert(ele);
@@ -307,31 +312,29 @@ public:
     void insert(_Ele & ele)
 	{
 	    if(_ctn(ele, _bb))
-		_insert(ele);
+		_insert(ele, _apg(ele));
 	    else
 		_eles.insert(ele);
 	}
 
-    void _insert(_Ele & ele, octree * & oct)
+    void _insert(_Ele & ele, octree * & oct, const vec3<_BB_Unit> & ap)
 	{
 	    if(_childLenSide > _minOctanLenSide)
 	    {
-		for(std::uint8_t i = 0; i < 8; i++)
-		{
-		    const aabb<_BB_Unit>& octanBB = _octanBB[i];
-		    if(_ctn(ele, octanBB))
+		const std::uint8_t idx = _getPossiableOctanIdx(ap);
+		const aabb<_BB_Unit>& octanBB = _octanBB[idx];
+		if(_ctn(ele, octanBB))
 		    {
-			octree* & child = _children[i];
+			octree* & child = _children[idx];
 			if(child != nullptr)
-			    child->_insert(ele, oct);
+			    child->_insert(ele, oct, ap);
 			else
-			{
-			    child = new octree(octanBB);
-			    child->_insert(ele, oct);
-			}
+			    {
+				child = new octree(octanBB);
+				child->_insert(ele, oct, ap);
+			    }
 			return;
 		    }
-		}
 	    }
 
 	    oct = this;
@@ -341,13 +344,18 @@ public:
     void insert(_Ele & ele, octree* & oct)
 	{
 	    if(_ctn(ele, _bb))
-		_insert(ele, oct);
+		_insert(ele, oct, _apg(ele));
 	    else
 	    {
 		oct = this;
 		_eles.insert(ele);
 	    }
 	}
+
+    // void remove(_Ele & ele)
+    // {
+	
+    // }
 	    
     std::vector<_Ele> query_intersect(const aabb<_BB_Unit>& q) const
 	{
@@ -369,32 +377,41 @@ public:
 	    return ret;
 	}
 private:
+    std::uint8_t _getPossiableOctanIdx(const vec3<_BB_Unit>& ap) const
+    {
+	// check which octanBB is the ele.centre in
+	// according to the way octanBB stored
+	std::uint8_t idx = ap.x > _centre.x? 4 : 0;
+	idx += ap.y > _centre.y? 2 : 0;
+	idx += ap.z > _centre.z? 1 : 0;
+
+	return idx;
+    }
+private:
     std::set<_Ele> _eles;
     aabb<_BB_Unit> _bb;
+    // (xl, ((yl, z[l,u]), (yu, z[l, u])))(xu, ...)
+    // for(int i = 0; i <2; i ++)
+    // 	{
+    // 	    for j
+    // 		for k
+    // 		    octanbb.l[idx++] = ls.vec3[i][j][k]
+    // 	}
     aabb<_BB_Unit> _octanBB[8];
     const vec3<_BB_Unit> & _childLenSide;
+    const vec3<_BB_Unit> & _centre;
     octree* _children[8];
-    const std::uint8_t _level;
-    static _Contain _ctn;
-    static constexpr vec3<_BB_Unit> _minOctanLenSide = vec3<_BB_Unit>(std::numeric_limits<_BB_Unit>::min() * 2);
+    static constexpr _Contain _ctn{};
+    static constexpr _ArbitraryPointGetter _apg{};
+    static constexpr vec3<_BB_Unit> _minOctanLenSide{std::numeric_limits<_BB_Unit>::min() * 2};
 };
-template <typename _Ele, typename _Contain, typename _BB_Unit>
-_Contain octree<_Ele, _Contain, _BB_Unit>::_ctn;
+template <typename _Ele, typename _Contain, typename _ArbitraryPointGetter, typename _BB_Unit>
+constexpr _Contain octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_ctn;
 
-// template <typename _Ele, typename _Contain, typename _BB_Unit>
-// constexpr vec3<_BB_Unit> octree<_Ele, _Contain, _BB_Unit>::_minOctanLenSide;
+template <typename _Ele, typename _Contain, typename _ArbitraryPointGetter, typename _BB_Unit>
+constexpr _ArbitraryPointGetter octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_apg;
 
-template <typename T>
-struct ttt
-{
-    static constexpr vec3<T> x = {std::numeric_limits<T>::min() * 2};
-    void func()
-	{
-	    if(vec3<T>(1) > x)
-	    {
-		int a = 1;
-	    }
-	}
-};
+template <typename _Ele, typename _Contain, typename _ArbitraryPointGetter, typename _BB_Unit>
+constexpr vec3<_BB_Unit> octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_minOctanLenSide;
 
 GB_PHYSICS_NS_END
