@@ -395,6 +395,10 @@ namespace std
     class numeric_limits<gb::physics::Float>
     {
     public:
+#ifdef _MSC_VER
+#undef min
+#undef max
+#endif
 	inline static constexpr gb::physics::Float min() noexcept
 	    {
 		return gb::physics::Float(std::numeric_limits<float>::min());
