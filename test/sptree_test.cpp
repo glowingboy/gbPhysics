@@ -119,15 +119,19 @@ int sptree_test(const std::uint32_t count = 100)
     // octree test
     typedef octree<sptt*, sptt::contain, sptt::arbitrary_point_getter> octree_test;
     octree_test oct(aabb<>(vec3F(0, 0, 0), vec3F(count, count, count)));
-    
+
+    std::vector<sptt*> sptts;
+    sptts.reserve(count);
     for(std::uint32_t i = 0; i < count; i++)
     {
 	sptt* s = new sptt(vec3F(rand() % count, rand() % count, rand() % count), rand() % 20 * 0.01f);
+	sptts.push_back(s);
+	
 	octree_test* ret;
 	oct.insert(s, ret);
 	std::cout << "sptt: " << sbb_tostring(s->sbb) << std::endl;
-	const aabb<>& octbb = ret->GetBB();
-	const std::set<sptt*>& eles = ret->GetElements();
+	const aabb<>& octbb = ret->getBB();
+	const std::set<sptt*>& eles = ret->getCurElements();
 	std::cout << "octbb: " << aabb_tostring(octbb) << std::endl;
 	std::cout << "siblings: ";
 	std::for_each(eles.begin(), eles.end(), [](sptt* const & ele)
@@ -138,5 +142,13 @@ int sptree_test(const std::uint32_t count = 100)
 	std::cout << std::endl;
     }
 
+    std::cout << "oct size@ " << oct.size() << std::endl;
+    
+    for(std::uint32_t i = 0; i < count; i++)
+    {
+	oct.remove(sptts[i]);
+    }
+
+    std::cout << "oct size@ " << oct.size() << std::endl;        
     return 0;
 }

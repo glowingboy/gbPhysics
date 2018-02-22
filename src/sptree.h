@@ -227,12 +227,13 @@ template <typename _Ele,
 class octree
 {
 public:
-    octree(const aabb<_BB_Unit>& bb, octree* parent = nullptr):
+    octree(const aabb<_BB_Unit>& bb, octree* parent = nullptr, const std::uint8_t siblingIdx = 0):
 	_bb(bb)
 	,_childLenSide(_octanBB[0].lenSide)
 	,_centre(_octanBB[7].diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX])
 	,_children{nullptr}
 	,_parent(parent)
+	,_siblingIdx(siblingIdx)
 	{
 	    const vec3<_BB_Unit> (&diagonal)[2] = bb.diagonal;
 		    
@@ -275,15 +276,27 @@ public:
 	    }
 	}
 public:
-    const aabb<_BB_Unit>& GetBB() const
+    const aabb<_BB_Unit>& getBB() const
 	{
 	    return _bb;
 	}
-    const std::set<_Ele>& GetElements() const
+    const std::set<_Ele>& getCurElements() const
 	{
 	    return _eles;
 	}
-
+    std::size_t size() const
+    {
+	std::size_t s = _eles.size();
+	for(std::uint8_t i = 0; i < 8; i ++)
+	    {
+		const octree* child = _children[i];
+		if(child != nullptr)
+		    s += child->size();
+	    }
+	
+	return s;
+    }
+private:
     // children insert
     void _insert(_Ele & ele, const vec3<_BB_Unit>& ap)
     {
@@ -292,6 +305,8 @@ public:
 		const std::uint8_t idx = _getPossiableOctanIdx(ap);
 		
 		const aabb<_BB_Unit>& octanBB = _octanBB[idx];
+		
+		// check if octan ctn ele
 		if(_ctn(ele, octanBB))
 		    {
 			octree* & child = _children[idx];
@@ -300,7 +315,7 @@ public:
 			    child->_insert(ele, ap);
 			else
 			    {
-				child = new octree(octanBB, this);
+				child = new octree(octanBB, this, idx);
 				child->_insert(ele, ap);
 			    }
 			return;
@@ -310,6 +325,7 @@ public:
 	    _eles.insert(ele);
 	}
     
+public:
     void insert(_Ele & ele)
 	{
 	    //	    if(_ctn(ele, _bb))
@@ -317,7 +333,8 @@ public:
 	    //	    else
 	    //		_eles.insert(ele);
 	}
-
+    
+private:
     void _insert(_Ele & ele, octree * & oct, const vec3<_BB_Unit> & ap)
 	{
 	    if(_childLenSide > _minOctanLenSide)
@@ -331,7 +348,7 @@ public:
 			    child->_insert(ele, oct, ap);
 			else
 			    {
-				child = new octree(octanBB, this);
+				child = new octree(octanBB, this, idx);
 				child->_insert(ele, oct, ap);
 			    }
 			return;
@@ -342,6 +359,7 @@ public:
 	    _eles.insert(ele);
 	}
     
+public:
     void insert(_Ele & ele, octree* & oct)
 	{
 	    // if(_ctn(ele, _bb))
@@ -352,8 +370,9 @@ public:
 	    // 	_eles.insert(ele);
 	    // }
 	}
-
-    void shrink()
+    
+private:
+    void _shrink()
     {
 	if(_eles.size() != 0)
 	    return;
@@ -362,16 +381,31 @@ public:
 		if(_children[i] != nullptr)
 		    return;
 	    }
-	//	_parent-> TODO:
-    }
-    
-    void remove_here(_Ele & ele)
-    {
-	typename std::vector<_Ele>::iterator i = _eles.find(ele);
-	if( i != _eles.end())
-	    _eles.erase(i);
+
+	if(_parent != nullptr)
+	    {
+		octree* & cur = _parent->_children[_siblingIdx];
+	
+		delete cur;
+		cur = nullptr;
+
+		_parent->_shrink();
+		
+	    }
     }
 
+public:    
+    void remove_here(_Ele & ele)
+    {
+	typename std::set<_Ele>::iterator i = _eles.find(ele);
+	if( i != _eles.end())
+	    {
+		_eles.erase(i);
+		_shrink();
+	    }
+    }
+
+private:    
     void _remove(_Ele& ele, const vec3<_BB_Unit> & ap)
     {
 	const std::uint8_t idx = _getPossiableOctanIdx(ap);
@@ -380,12 +414,14 @@ public:
 	    {
 		octree* & child = _children[idx];
 		assert(child != nullptr);
-		child->_remove(ele, ap);
+		if(child != nullptr)
+		    child->_remove(ele, ap);
 	    }
 	else
 	    remove_here(ele);
     }
-    
+
+public:
     void remove(_Ele & ele)
     {
 	_remove(ele, _apg(ele));
@@ -437,6 +473,7 @@ private:
     octree* _children[8];
     
     octree* _parent;
+    const std::uint8_t _siblingIdx;
     
     static constexpr _Contain _ctn{};
     static constexpr _ArbitraryPointGetter _apg{};
