@@ -224,154 +224,163 @@ template <typename _Ele,
 	  typename _Contain,
 	  typename _ArbitraryPointGetter,
 	  typename _BB_Unit = Float>
-class octree
+	class octree
 {
 public:
-    octree(const aabb<_BB_Unit>& bb, octree* parent = nullptr, const std::uint8_t siblingIdx = 0):
-	_bb(bb)
-	,_childLenSide(_octanBB[0].lenSide)
-	,_centre(_octanBB[7].diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX])
-	,_children{nullptr}
-	,_parent(parent)
-	,_siblingIdx(siblingIdx)
+	octree(const aabb<_BB_Unit>& bb, octree* parent = nullptr, const std::uint8_t siblingIdx = 0) :
+		_bb(bb)
+		, _childLenSide(_octanBB[0].lenSide)
+		, _centre(_octanBB[7].diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX])
+		, _children{ nullptr }
+		, _parent(parent)
+		, _siblingIdx(siblingIdx)
 	{
-	    const vec3<_BB_Unit> (&diagonal)[2] = bb.diagonal;
-		    
-	    const vec3<_BB_Unit> centre = (diagonal[0] + diagonal[1]) / 2;
-	    const vec3<_BB_Unit> octanLen = (diagonal[1] - diagonal[0]) / 2;
-	    const vec3<_BB_Unit> lowers[2] = {diagonal[0], centre};
+		const vec3<_BB_Unit>(&diagonal)[2] = bb.diagonal;
 
-	    // store octanBB.lower in (x_l, ((y_l, (z_l, z_u)), (y_u, ...)))(x_u, ...) order
-	    // 1st, split by x into (0, 3) (4, 7)
-	    // 2nd, split by y into (0, 1) (2, 3) (4, 5) (6, 7)
-	    // 3rd, split by z into ...
-	    // so the centre of bb is octanBB[7].dia.lower
-	    std::uint8_t idx = 0;
-	    for(std::uint8_t i = 0; i < 2; i++)
-	    {
-		for(std::uint8_t j = 0; j < 2; j++)
+		const vec3<_BB_Unit> centre = (diagonal[0] + diagonal[1]) / 2;
+		const vec3<_BB_Unit> octanLen = (diagonal[1] - diagonal[0]) / 2;
+		const vec3<_BB_Unit> lowers[2] = { diagonal[0], centre };
+
+		// store octanBB.lower in (x_l, ((y_l, (z_l, z_u)), (y_u, ...)))(x_u, ...) order
+		// 1st, split by x into (0, 3) (4, 7)
+		// 2nd, split by y into (0, 1) (2, 3) (4, 5) (6, 7)
+		// 3rd, split by z into ...
+		// so the centre of bb is octanBB[7].dia.lower
+		std::uint8_t idx = 0;
+		for (std::uint8_t i = 0; i < 2; i++)
 		{
-		    for(std::uint8_t k = 0; k < 2; k++)
-		    {
-			aabb<_BB_Unit> & octanBB = _octanBB[idx++];
-			octanBB.lenSide = octanLen;
-			
-			vec3<_BB_Unit> (&octanDia)[2] = octanBB.diagonal;
-			vec3<_BB_Unit>& lower = octanDia[0];
-			lower.x = lowers[i].x;
-			lower.y = lowers[j].y;
-			lower.z = lowers[k].z;
-			octanDia[1] = lower + octanLen;
-		    }
-		}
-	    }
-	}
-    ~octree()
-	{
-	    for(std::uint8_t i = 0; i < 8; i++)
-	    {
-		octree* & child = _children[i];
-		delete child;
-		child = nullptr;
-	    }
-	}
-public:
-    const aabb<_BB_Unit>& getBB() const
-	{
-	    return _bb;
-	}
-    const std::set<_Ele>& getCurElements() const
-	{
-	    return _eles;
-	}
-    std::size_t size() const
-    {
-	std::size_t s = _eles.size();
-	for(std::uint8_t i = 0; i < 8; i ++)
-	    {
-		const octree* child = _children[i];
-		if(child != nullptr)
-		    s += child->size();
-	    }
-	
-	return s;
-    }
-private:
-    // children insert
-    void _insert(_Ele & ele, const vec3<_BB_Unit>& ap)
-    {
-	if(_childLenSide > _minOctanLenSide)
-	    {
-		const std::uint8_t idx = _getPossiableOctanIdx(ap);
-		
-		const aabb<_BB_Unit>& octanBB = _octanBB[idx];
-		
-		// check if octan ctn ele
-		if(_ctn(ele, octanBB))
-		    {
-			octree* & child = _children[idx];
-			
-			if(child != nullptr)
-			    child->_insert(ele, ap);
-			else
-			    {
-				child = new octree(octanBB, this, idx);
-				child->_insert(ele, ap);
-			    }
-			return;
-		    }
-	    }
-	    
-	    _eles.insert(ele);
-	}
-    
-public:
-    void insert(_Ele & ele)
-	{
-	    //	    if(_ctn(ele, _bb))
-	    _insert(ele, _apg(ele));
-	    //	    else
-	    //		_eles.insert(ele);
-	}
-    
-private:
-    void _insert(_Ele & ele, octree * & oct, const vec3<_BB_Unit> & ap)
-	{
-	    if(_childLenSide > _minOctanLenSide)
-	    {
-		const std::uint8_t idx = _getPossiableOctanIdx(ap);
-		const aabb<_BB_Unit>& octanBB = _octanBB[idx];
-		if(_ctn(ele, octanBB))
-		    {
-			octree* & child = _children[idx];
-			if(child != nullptr)
-			    child->_insert(ele, oct, ap);
-			else
-			    {
-				child = new octree(octanBB, this, idx);
-				child->_insert(ele, oct, ap);
-			    }
-			return;
-		    }
-	    }
+			for (std::uint8_t j = 0; j < 2; j++)
+			{
+				for (std::uint8_t k = 0; k < 2; k++)
+				{
+					aabb<_BB_Unit> & octanBB = _octanBB[idx++];
+					octanBB.lenSide = octanLen;
 
-	    oct = this;
-	    _eles.insert(ele);
+					vec3<_BB_Unit>(&octanDia)[2] = octanBB.diagonal;
+					vec3<_BB_Unit>& lower = octanDia[0];
+					lower.x = lowers[i].x;
+					lower.y = lowers[j].y;
+					lower.z = lowers[k].z;
+					octanDia[1] = lower + octanLen;
+				}
+			}
+		}
 	}
-    
-public:
-    void insert(_Ele & ele, octree* & oct)
+	~octree()
 	{
-	    // if(_ctn(ele, _bb))
-	    _insert(ele, oct, _apg(ele));
-	    // else
-	    // {
-	    // 	oct = this;
-	    // 	_eles.insert(ele);
-	    // }
+		for (std::uint8_t i = 0; i < 8; i++)
+		{
+			octree* & child = _children[i];
+			delete child;
+			child = nullptr;
+		}
 	}
-    
+public:
+	const aabb<_BB_Unit>& getBB() const
+	{
+		return _bb;
+	}
+	const std::set<_Ele>& getCurElements() const
+	{
+		return _eles;
+	}
+	std::size_t size() const
+	{
+		std::size_t s = _eles.size();
+		for (std::uint8_t i = 0; i < 8; i++)
+		{
+			const octree* child = _children[i];
+			if (child != nullptr)
+				s += child->size();
+		}
+
+		return s;
+	}
 private:
+	// children insert
+	void _insert(_Ele & ele, const vec3<_BB_Unit>& ap)
+	{
+		if (_childLenSide > _minOctanLenSide)
+		{
+			const std::uint8_t idx = _getPossiableOctanIdx(ap);
+
+			const aabb<_BB_Unit>& octanBB = _octanBB[idx];
+
+			// check if octan ctn ele
+			if (_ctn(ele, octanBB))
+			{
+				octree* & child = _children[idx];
+
+				if (child != nullptr)
+					child->_insert(ele, ap);
+				else
+				{
+					child = new octree(octanBB, this, idx);
+					child->_insert(ele, ap);
+				}
+				return;
+			}
+		}
+
+		_eles.insert(ele);
+	}
+
+public:
+	void insert(_Ele & ele)
+	{
+		//	    if(_ctn(ele, _bb))
+		_insert(ele, _apg(ele));
+		//	    else
+		//		_eles.insert(ele);
+	}
+
+private:
+	void _insert(_Ele & ele, octree * & oct, const vec3<_BB_Unit> & ap)
+	{
+		if (_childLenSide > _minOctanLenSide)
+		{
+			const std::uint8_t idx = _getPossiableOctanIdx(ap);
+			const aabb<_BB_Unit>& octanBB = _octanBB[idx];
+			if (_ctn(ele, octanBB))
+			{
+				octree* & child = _children[idx];
+				if (child != nullptr)
+					child->_insert(ele, oct, ap);
+				else
+				{
+					child = new octree(octanBB, this, idx);
+					child->_insert(ele, oct, ap);
+				}
+				return;
+			}
+		}
+
+		oct = this;
+		_eles.insert(ele);
+	}
+
+public:
+	void insert(_Ele & ele, octree* & oct)
+	{
+		// if(_ctn(ele, _bb))
+		_insert(ele, oct, _apg(ele));
+		// else
+		// {
+		// 	oct = this;
+		// 	_eles.insert(ele);
+		// }
+	}
+
+private:
+	void _shrink(const std::uint8_t siblingIdx)
+	{
+		octree* & cur = _children[siblingIdx];
+		delete cur;
+		cur = nullptr;
+
+		_shrink();
+	}
+
     void _shrink()
     {
 	if(_eles.size() != 0)
@@ -382,16 +391,8 @@ private:
 		    return;
 	    }
 
-	if(_parent != nullptr)
-	    {
-		octree* & cur = _parent->_children[_siblingIdx];
-	
-		delete cur;
-		cur = nullptr;
-
-		_parent->_shrink();
-		
-	    }
+	if (_parent != nullptr)
+		_parent->_shrink(_siblingIdx);
     }
 
 public:    
@@ -477,7 +478,11 @@ private:
     
     static constexpr _Contain _ctn{};
     static constexpr _ArbitraryPointGetter _apg{};
+#ifdef _MSC_VER			// msvc compiler issue: Fatal Error C1002
+    static const vec3<_BB_Unit> _minOctanLenSide;
+#else
     static constexpr vec3<_BB_Unit> _minOctanLenSide{std::numeric_limits<_BB_Unit>::min() * 2};
+#endif
 };
 template <typename _Ele, typename _Contain, typename _ArbitraryPointGetter, typename _BB_Unit>
 constexpr _Contain octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_ctn;
@@ -486,6 +491,10 @@ template <typename _Ele, typename _Contain, typename _ArbitraryPointGetter, type
 constexpr _ArbitraryPointGetter octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_apg;
 
 template <typename _Ele, typename _Contain, typename _ArbitraryPointGetter, typename _BB_Unit>
+#ifdef _MSC_VER
+const vec3<_BB_Unit> octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_minOctanLenSide{std::numeric_limits<_BB_Unit>::min() * 2};
+#else
 constexpr vec3<_BB_Unit> octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_minOctanLenSide;
+#endif
 
 GB_PHYSICS_NS_END
