@@ -9,7 +9,8 @@
 #include <cstdint>
 #include <cmath>
 #include <limits>
-
+#include <vector>
+#include <type_traits>
 GB_PHYSICS_NS_BEGIN
 
 //**************** fundamental type ****************
@@ -67,6 +68,10 @@ union Float
     
 };
 
+template <typename T>
+class is_Float : std::false_type{} ;
+
+template<> class is_Float<Float> : std::true_type {};
 //**************** end of fundamental type ****************
 
 class bit_vector
@@ -324,6 +329,20 @@ struct vec3
 	z(o)
 	{}
 
+    vec3(const typename std::conditional<is_Float<T>::value, std::vector<float>, std::vector<T>>::type& v):
+	x(v[0]),
+	y(v[1]),
+	z(v[2])
+	{
+	    assert(v.size() >= 3);
+	}
+
+    void operator=(const typename std::conditional<is_Float<T>::value, std::vector<float>, std::vector<T>>::type& v)
+	{
+	    assert(v.size() >= 3);
+	    std::memcpy(this, v.data(), 3 * sizeof(T));
+	}
+    
     std::uint8_t length()const
 	{
 	    return 3;
@@ -385,6 +404,26 @@ struct vec3
 };
 
 typedef vec3<Float> vec3F;
+
+template <typename T>
+struct vec4
+{
+    union
+    {
+	struct { T x, y, z, w; };
+	struct { T r, g, b, a; };
+	struct { T s, t, u, v; };
+    };
+
+    vec4(): x(0), y(0), z(0), w(0){}
+    vec4(T x_, T y_, T z_, T w_): x(x_), y(y_), z(z_), w(w_){}
+    void operator=(const vec3<T>& v3)
+	{
+	    std::memcpy(this, &v3, 3 * sizeof(T));
+	}
+};
+
+typedef vec4<Float> vec4F;    
 
 GB_PHYSICS_NS_END
 

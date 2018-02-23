@@ -11,6 +11,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DI
 set(srcs)
 gb_add_class(physicsNS src srcs)
 gb_add_class(type src srcs)
+gb_add_class(matrix src srcs)
 gb_add_class(math src srcs)
 gb_add_class(image src srcs)
 gb_add_class(boundingbox src srcs)
