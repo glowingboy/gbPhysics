@@ -1,7 +1,7 @@
 #pragma once
 
 #include "type.h"
-
+#include "math.h"
 // column major order
 
 GB_PHYSICS_NS_BEGIN
@@ -62,12 +62,67 @@ mat4<T> scaleMat(const vec3<T>& scale)
     return ret;
 }
 
-template<typename T>
-mat4<T> rotateXAxisMat(const T float degree)
+template <typename T>
+mat4<T> rotateXAxisMat(const float degree)
 {
-    
+    mat4<T> ret; 
+    float radian = gb::math::degree2radian(degree);
+
+    T sin = std::sin(radian);
+    T cos = std::cos(radian);
+
+    ret[1][1] = cos;
+    ret[2][1] = -sin;
+    ret[1][2] = sin;
+    ret[2][2] = cos;
+
+    return ret;
 }
 
+template <typename T>
+mat4<T> rotateYAxisMat(const float degree)
+{
+    mat4<T> ret; 
+    float radian = gb::math::degree2radian(degree);
 
+    T sin = std::sin(radian);
+    T cos = std::cos(radian);
+
+    ret[0][0] = cos;
+    ret[2][0] = sin;
+    ret[0][2] = -sin;
+    ret[2][2] = cos;
+
+    return ret;
+}
+
+template <typename T>
+mat4<T> rotateZAxisMat(const float degree)
+{
+    mat4<T> ret; 
+    float radian = gb::math::degree2radian(degree);
+
+    T sin = std::sin(radian);
+    T cos = std::cos(radian);
+
+    ret[0][0] = cos;
+    ret[1][0] = -sin;
+    ret[0][1] = sin;
+    ret[1][1] = cos;
+
+    return ret;
+}
+
+template <typename T>
+mat4<T> translateMat(const vec3<T>& v)
+{
+    mat4<T> ret;
+
+    for(std::uint8_t i = 0; i < 3; i++)
+	{
+	    ret[3][i] = v[i];
+	}
+    return ret;
+}
 
 GB_PHYSICS_NS_END

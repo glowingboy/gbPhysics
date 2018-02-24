@@ -2,6 +2,9 @@
 #include <cstdint>
 #include <cmath>
 #include <cstring>
+
+#define GB_MATH_PI 3.141592f
+
 namespace gb
 {
   namespace math
@@ -42,5 +45,9 @@ namespace gb
 	  double _scale;
       };
 
+      inline float degree2radian(float degree)
+      {
+	  return GB_MATH_PI * (degree / 180.0f);
+      }
   };
 };
