@@ -218,7 +218,7 @@ struct kd_node : public binary_tree_node
 };
 
 /*
- *@param _Intersect, bool _Intersect(_Ele, _bb).
+ *@param _Contain, bool _Contain(_Ele, _bb).
  */
 template <typename _Ele,
 	  typename _Contain,

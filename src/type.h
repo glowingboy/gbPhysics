@@ -69,9 +69,9 @@ union Float
 };
 
 template <typename T>
-class is_Float : std::false_type{} ;
+class is_Float : public std::false_type{} ;
 
-template<> class is_Float<Float> : std::true_type {};
+template<> class is_Float<Float> : public std::true_type {};
 //**************** end of fundamental type ****************
 
 class bit_vector
@@ -421,6 +421,18 @@ struct vec4
 	{
 	    std::memcpy(this, &v3, 3 * sizeof(T));
 	}
+
+    const T & operator[](const std::uint8_t idx) const
+	{
+	    assert(idx <=3);
+	    return (&(this->x))[idx];
+	}
+    T & operator[] (const std::uint8_t idx)
+	{
+	    assert(idx <=3);
+	    return (&(this->x))[idx];
+	}
+	
 };
 
 typedef vec4<Float> vec4F;    
