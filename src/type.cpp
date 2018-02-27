@@ -1,5 +1,4 @@
 #include "type.h"
-#include <cstring>
 
 using namespace gb::physics;
 
