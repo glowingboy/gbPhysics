@@ -122,4 +122,9 @@ struct aabb
     vec3<T> lenSide;
 };
 
+template<typename T>
+spherebb<T> genSphereBB(const T* data, const std::size_t count)
+{
+    
+}
 GB_PHYSICS_NS_END

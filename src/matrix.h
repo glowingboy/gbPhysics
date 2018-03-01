@@ -22,7 +22,100 @@ struct mat3
 	    assert(idx <= 2);
 	    return value[idx];
 	}
+    
+    mat3 && operator / (const T scalar) &&
+	{
+	    value[0] /= scalar;
+	    value[1] /= scalar;
+	    value[2] /= scalar;
+
+	    return std::move(*this);
+	}
+    
+    void operator += (const mat3 & o)
+	{
+	    col_type (&o_val) [3] = o.value;
+	    value[0] += o_val[0];
+	    value[1] += o_val[1];
+	    value[2] += o_val[2];
+	}
 };
+
+template <typename T>
+mat3<T> vec3ColMultiplyRow(const vec3<T>& col, const vec3<T>& row)
+{
+    mat3<T> ret;
+    for(std::uint8_t i = 0; i < 3; i ++)
+    {
+	for(std::uint8_t j = 0; j < 3; j ++)
+	{
+	    ret[i][j] = col[i] * row[j];
+	}
+    }
+    return ret;
+}
+
+template<typename T>
+mat3<T> covarianceMat3(const vec3<T>* data, const std::size_t count)
+{
+    vec3<T> mean = meanVec3<T>(data, count);
+
+    /* 
+       C = E((P - E(P))(P - E(P))_T)
+       C = SUM((P - E(P))(P - E(P))_T) / count
+    */
+
+    mat3<T> ret;
+
+    for(std::size_t i = 0; i < count; i++)
+    {
+	ret += (vec3ColMultiplyRow(data[i], mean) / count);
+    }
+
+    return ret;
+}
+
+template <typename T>
+mat3<T> naturalAxes(const vec3<T>* data, const std::size_t count)
+{
+    /*
+      using PCA method(primary component analyze)
+      calculating covariance_matrix(x, y, z) of set of points
+      called C
+      | row\col | 1   | 2   | 3   |
+      |---------+-----+-----+-----|
+      |       1 | x-x | x-y | x-z |
+      |---------+-----+-----+-----|
+      |       2 | y-x | y-y | y-z |
+      |---------+-----+-----+-----|
+      |       3 | z-x | z-y | z-z |
+      
+      if matrix A consisted of a new basis transform the points
+      so that the C is diagonal matrix which means
+      there will be no correlation between any two coordinates of the points
+      and that new basis will be the natural axes
+      
+      let P be the set of points, 
+      then
+      C = E((P - E(P))(P - E(P))_T)
+      so
+      C' = E((A * P - E(A * P))( A * p - E(A * P ))_T)
+         = E(A(P - E(P)) A_T(P - E(P))_T)
+	 = A * E((P - E(P))(P - E(P))_T) * A_T
+	 = A * C * A_T
+      since C is sysmetric matrix, so the eigenvectors of C are orthogonal,
+      so there exists a matrix B(consisted of eigenvectors) 
+      which let B * C * B_1 = B * C * B_T = diagonalized(C) = C'
+      so A need to be the B
+      
+      then the problem turns out to find eigenvectors of C
+    */
+
+    // covariance matrix
+    mat3<T> covM = covarianceMat3<T>(data, count);
+
+    // eigenvector
+}
 
 template <typename T>
 struct mat4
@@ -151,5 +244,7 @@ mat4<T> translateMat(const vec3<T>& v)
     
     return ret;
 }
+
+
 
 GB_PHYSICS_NS_END

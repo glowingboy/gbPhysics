@@ -385,6 +385,14 @@ struct vec3
 	    return vec3(x / scalar, y / scalar, z / scalar);
 	}
 
+    template<typename S>
+    void operator/=(const S scalar)
+	{
+	    x /= scalar;
+	    y /= scalar;
+	    z /= scalar;
+	}
+
     bool operator<(const vec3& o) const
 	{
 	    return (x < o.x) && (y < o.y) && (z < o.z);
@@ -404,6 +412,19 @@ struct vec3
 };
 
 typedef vec3<Float> vec3F;
+
+template<typename T>
+vec3<T> meanVec3(const vec3<T> * data, const std::size_t count)
+{
+    vec3<T> ret;
+    for(std::size_t i = 0; i < count; i++)
+    {
+	ret += data[i] / count;
+    }
+
+    return ret;
+}
+
 
 template <typename T>
 struct vec4
