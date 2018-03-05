@@ -350,7 +350,7 @@ namespace gb
 				  {width, std::numeric_limits<std::uint32_t>::max()};
 
 			      root.insert(sprite, boundary, location);
-			      locations.push_back({location[0], location[1]});
+			      locations.push_back({{location[0], location[1]}});
 			  });
 
 	    std::uint32_t height = ((binary_bin_packing_node<std::uint32_t, array_2d<Sprite>>*)(root.r))->bin_height();

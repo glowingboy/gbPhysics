@@ -303,6 +303,11 @@ struct vec2
 	{
 	    return (this->x >= o.x) && (this->y >= o.y);
 	}
+
+    T module() const
+	{
+	    return std::sqrt(x * x + y * y);
+	}
 };
 
 typedef vec2<Float> vec2F;
@@ -408,6 +413,11 @@ struct vec3
     bool operator >=(const vec3& o) const
 	{
 	    return (x >= o.x) && (y > o.y) && (z >= o.z);
+	}
+
+    T module() const
+	{
+	    return std::sqrt(x*x + y*y + z*z);
 	}
 };
 
