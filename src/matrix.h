@@ -2,6 +2,7 @@
 
 #include "type.h"
 #include "math.h"
+#include <utility>
 
 /*
   COLUMN MAJOR ORDER
@@ -19,12 +20,11 @@ struct mat2
 {
     typedef vec2<T> col_type;
     col_type value[2];
-    mat2(const T diagonalValue):
-	value{
-	{diagonalValue, 0},
-	    {0, diagonalValue}
-    }
-    {}
+    static mat2 make_identity()
+	{
+	    return mat2{{{1, 0}, {0, 1}}};
+	}
+    
     const col_type& operator[](const std::uint8_t idx) const
     {
 	assert(idx <= 1);
@@ -35,6 +35,41 @@ struct mat2
 	assert(idx <=1);
 	return value[idx];
     }
+    mat2 operator - (const mat2 & o)
+	{
+	    mat2 ret = *this;
+	    ret -= o;
+	    return ret;
+	}
+    mat2 & operator -= (const mat2 & o)
+    {
+	const col_type (&o_val) [2] = o.value;
+
+	value[0] -= o_val[0];
+	value[1] -= o_val[1];
+
+	return *this;
+    }
+
+    template<typename S>
+    mat2 operator * (const S scalar)
+	{
+	    mat2 ret = *this;
+
+	    ret *= scalar;
+
+	    return ret;
+	}
+    
+    template<typename S>
+    mat2 & operator *= ( const S scalar)
+    {
+	value[0] *= scalar;
+	value[1] *= scalar;
+
+	return *this;
+    }
+	
 };
 template<typename T>
 mat2<T>vec2ColMultiplyRow(const vec2<T>& col, const vec2<T>& row)
@@ -52,14 +87,10 @@ struct mat3
 {
     typedef vec3<T> col_type;
     col_type value[3];
-    mat3(const T diagonalValue = 1):
-	value
-    {
-	{diagonalValue, 0, 0},
-	    {0, diagonalValue, 0},
-		{0, 0, diagonalValue}
-    }
-    {}
+    static mat3 make_identity()
+	{
+	    return mat3{{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}};
+	}
     const col_type& operator[](const std::uint8_t idx) const
 	{
 	    assert(idx <= 2);
@@ -72,15 +103,83 @@ struct mat3
 	    return value[idx];
 	}
 
-    mat3 && operator / (const T scalar) &&
+    template<typename S>
+    mat3 & operator *= (const S scalar )
+    {
+	value[0] *= scalar;
+	value[1] *= scalar;
+	value[2] *= scalar;
+
+	return *this;
+    }
+
+    template<typename S>
+    mat3 operator * (const S scalar)
+	{
+	    mat3 ret = *this;
+	    ret *= scalar;
+	    return ret;
+	}
+    template<typename S>
+    mat3 & operator /= (const S scalar)
 	{
 	    value[0] /= scalar;
 	    value[1] /= scalar;
 	    value[2] /= scalar;
 
-	    return std::move(*this);
+	    return *this;
+	}
+    template<typename S>
+    mat3 operator / (const S scalar)
+	{
+	    mat3 ret = *this;
+	    ret /= scalar;
+	    return ret;
 	}
 
+    mat3 & operator -= (const mat3 & o)
+    {
+	const col_type (&o_val) [3] = o.value;
+	
+	value[0] -= o_val[0];
+	value[1] -= o_val[1];
+	value[2] -= o_val[2];
+	    
+	return *this;
+    }
+    
+    mat3 operator - (const mat3 & o)
+	{
+	    mat3 ret = *this;
+	    ret -= o;
+	    return ret;
+	}
+
+    col_type operator * (const col_type & col) const
+    {
+	return value[0] * col[0] + value[1] * col[1] + value[2] * col[2];
+    }
+    
+    mat3 operator * (const mat3 & o) const
+    {
+	mat3 ret;
+	col_type (&ret_col)[3] = ret.value;
+	const col_type (&o_col)[3] = o.value;
+	ret_col[0] = operator*(o_col[0]);
+	ret_col[1] = operator*(o_col[1]);
+	ret_col[2] = operator*(o_col[2]);
+
+	return ret;
+    }
+
+    mat3& operator *= (const mat3 & o)
+    {
+	mat3 ret = operator*(o);
+
+	*this = ret;
+	
+	return *this;
+    }
     void operator += (const mat3 & o)
 	{
 	    col_type (&o_val) [3] = o.value;
@@ -88,6 +187,34 @@ struct mat3
 	    value[1] += o_val[1];
 	    value[2] += o_val[2];
 	}
+
+    void transposelization()
+    {
+	// if is symmetric, just return?
+	col_type & col0 = value[0];
+	col_type & col1 = value[1];
+	col_type & col2 = value[2];
+
+	std::swap(col0[1], col1[0]);
+	std::swap(col0[2], col2[0]);
+	std::swap(col2[1], col1[2]);
+    }
+
+    mat3 transpose() const
+    {
+	mat3 ret(*this);
+	
+	col_type (&ret_cols)[3] = ret.value;
+	col_type & ret_col0 = ret_cols[0];
+	col_type & ret_col1 = ret_cols[1];
+	col_type & ret_col2 = ret_cols[2];
+	
+	std::swap(ret_col0[1], ret_col1[0]);
+	std::swap(ret_col0[2], ret_col2[0]);
+	std::swap(ret_col2[1], ret_col1[2]);
+
+	return ret;
+    }
 
     mat3 eigenvectors() const
 	{
@@ -155,31 +282,29 @@ struct mat3
 	    std::function<void(const mat3<T>&, mat3<T>&, mat3<T>&)> qr_decomposition = [](const mat3<T>& A, mat3<T>& Q, mat3<T>& R)
 		{
 		    // 1st col
-		    mat3<T> H1;
+		    mat3<T> H1 = mat3<T>::make_identity();
 		    
-		    vec3<T>& col1 = A[0];
-		    if(col1[1] != 0 || col2[2] !=0)
+		    const vec3<T>& col1 = A[0];
+		    if(col1[1] != 0 || col1[2] != 0)
 			{
 			    vec3<T> e1{1, 0, 0};
 			    vec3<T> V = col1 - col1 * (col1.module());
-			    V = V / V.module();
+			    V.identitylization();
 
-			    mat3<T> I(1);
-			    H1 = I - vec3ColMultiplyRow(V, V) * 2;
+			    H1 = mat3<T>::make_identity() -= vec3ColMultiplyRow(V, V) *= 2;
 			}
 		    
 		    // 2nd col
-		    mat3<T> H2;
+		    mat3<T> H2 = mat3<T>::make_identity();
 
-		    vec2<T>& col2{A[1][1], A[1][2]};
+		    const vec2<T> col2{A[1][1], A[1][2]};
 		    if(col2[1] != 0)
 			{
 			    vec2<T> e2{1, 0};
 			    vec2<T> V = col2 - col2 * (col2.module());
-			    V = V / module();
+			    V.identitylization();
 
-			    mat2<T> I{{1}};
-			    mat2<T> h2 = I - vec2ColMultiplyRow(V, V) * 2;
+			    mat2<T> h2 = mat2<T>::make_identity() -= vec2ColMultiplyRow(V, V) *= 2;
 
 			    H2[1][1] = h2[0][0];
 			    H2[1][2] = h2[0][1];
@@ -188,19 +313,20 @@ struct mat3
 			}
 
 		    R = H2 * H1;
-		    Q = H1.transpose() * H2.transpos();
-		}
+		    Q = H1.transpose() * H2.transpose();
+		};
 
 	    mat3<T> A = *this;
-
+	    mat3<T> ret = mat3<T>::make_identity();
 	    mat3<T> Q, R;
-	    while(A[0][1] != 0 || A[0][2] == 0 || A[1][2] == 0)
+	    while(A[0][1] != 0 || A[0][2] != 0 || A[1][2] != 0)
 		{
 		    qr_decomposition(A, Q, R);
 		    A = R * Q;
+		    ret *= Q;
 		}
 
-	    return 
+	    return ret;
 	}
 };
 
@@ -228,9 +354,11 @@ mat3<T> covarianceMat3(const vec3<T>* data, const std::size_t count)
 
     mat3<T> ret;
 
+    vec3<T> p_ep;
     for(std::size_t i = 0; i < count; i++)
     {
-	ret += (vec3ColMultiplyRow(data[i], mean) / count);
+	p_ep = data[i] - mean;
+	ret += (vec3ColMultiplyRow(p_ep, p_ep) / count);
     }
 
     return ret;
@@ -276,6 +404,7 @@ mat3<T> naturalAxes(const vec3<T>* data, const std::size_t count)
     mat3<T> covM = covarianceMat3<T>(data, count);
 
     // eigenvector
+    return covM.eigenvectors();
 }
 
 template <typename T>
@@ -283,14 +412,10 @@ struct mat4
 {
     typedef vec4<T> col_type;
     col_type value[4];
-
-    mat4(T diagonalValue = 1):
-	value{
-	{diagonalValue, 0, 0, 0},
-	    {0, diagonalValue, 0, 0},
-		{0, 0, diagonalValue, 0},
-		    {0, 0, 0, diagonalValue}}
-    {}
+    static mat4 make_identity()
+	{
+	    return mat4{{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}};
+	}
 
     mat4(const col_type & col0, const col_type & col1, const col_type & col2, const col_type & col3):
 	value{col0, col1, col2, col3}
@@ -327,7 +452,7 @@ typedef mat4<Float> mat4F;
 template <typename T>
 mat4<T> scaleMat(const vec3<T>& scale)
 {
-    mat4<T> ret;
+    mat4<T> ret = mat4<T>::make_identity();
 
     ret[0][0] = scale[0];
     ret[1][1] = scale[1];
@@ -339,7 +464,7 @@ mat4<T> scaleMat(const vec3<T>& scale)
 template <typename T>
 mat4<T> rotateXAxisMat(const float degree)
 {
-    mat4<T> ret;
+    mat4<T> ret = mat4<T>::make_identity();
     float radian = gb::math::degree2radian(degree);
 
     T sin = std::sin(radian);
@@ -356,7 +481,7 @@ mat4<T> rotateXAxisMat(const float degree)
 template <typename T>
 mat4<T> rotateYAxisMat(const float degree)
 {
-    mat4<T> ret;
+    mat4<T> ret = mat4<T>::make_identity();
     float radian = gb::math::degree2radian(degree);
 
     T sin = std::sin(radian);
@@ -373,7 +498,7 @@ mat4<T> rotateYAxisMat(const float degree)
 template <typename T>
 mat4<T> rotateZAxisMat(const float degree)
 {
-    mat4<T> ret;
+    mat4<T> ret = mat4<T>::make_identity();
     float radian = gb::math::degree2radian(degree);
 
     T sin = std::sin(radian);
@@ -390,7 +515,7 @@ mat4<T> rotateZAxisMat(const float degree)
 template <typename T>
 mat4<T> translateMat(const vec3<T>& v)
 {
-    mat4<T> ret;
+    mat4<T> ret = mat4<T>::make_identity();
 
     ret[3][0] = v[0];
     ret[3][1] = v[1];

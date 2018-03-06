@@ -27,7 +27,8 @@ union Float
 	std::uint32_t sign : 1;
     }parts;
 #endif
-    constexpr Float(const float f_) noexcept :f(f_) {}
+    template <typename T>
+    constexpr Float(const T f_) noexcept : f((float)f_){}
     
     Float():f(.0f) {}
     // relative epsilon method
@@ -46,26 +47,50 @@ union Float
 
 	    return false;
 	}
+    template<typename T>
+    bool operator==(const T& o) const
+    	{
+    	    return operator==(Float(o));
+    	}
 
     inline bool operator!=(const Float& o) const
 	{
 	    return ! operator==(o);
 	}
-
+    template<typename T>
+    bool operator!=(const T& o) const
+    	{
+    	    return operator!=(Float(o));
+    	}
+    
     inline bool operator <=(const Float & o) const
 	{
 	    return (this->f < o.f) || (this->f == o.f);
 	}
+    template<typename T>
+    bool operator <=(const T & o) const
+	{
+	    return operator<=(Float(o));
+	}
+    
     inline bool operator >=(const Float & o) const
 	{
 	    return (this->f > o.f) || (this->f == o.f);
 	}
-
-    inline constexpr operator float () const
+    template <typename T>
+    bool operator >=(const T& o) const
+	{
+	    return operator>=(Float(o));
+	}
+    
+    inline constexpr operator const float& () const
+    	{
+    	    return f;
+    	}
+    inline constexpr operator float& ()
 	{
 	    return f;
 	}
-    
 };
 
 template <typename T>
@@ -304,6 +329,48 @@ struct vec2
 	    return (this->x >= o.x) && (this->y >= o.y);
 	}
 
+    vec2 operator - (const vec2 & o) const
+	{
+	    return vec2(x - o.x, y - o.y);
+	}
+    void operator -=(const vec2 & o)
+	{
+	    x -= o.x;
+	    y -= o.y;
+	}
+    template <typename S>
+    vec2 operator*(const S scalar) const
+	{
+	    return vec2(x * scalar, y * scalar);
+	}
+
+    template <typename S>
+    void operator*=(const S scalar)
+	{
+	    x *= scalar;
+	    y *= scalar;
+	}
+
+    template<typename S>
+    vec2 operator /(const S scalar) const
+	{
+	    return vec2(x / scalar, y / scalar);
+	}
+    
+    template<typename S>
+    void operator /=(const S scalar)
+	{
+	    x /= scalar;
+	    y /= scalar;
+	}
+    void identitylization()
+	{
+	    operator/=(module());
+	}
+    vec2 identity() const
+	{
+	    return operator/(module());
+	}
     T module() const
 	{
 	    return std::sqrt(x * x + y * y);
@@ -379,10 +446,23 @@ struct vec3
 	{
 	    return vec3(x - o.x, y - o.y, z - o.z);
 	}
+    void operator-=(const vec3 & o)
+	{
+	    x -= o.x;
+	    y -= o.y;
+	    z -= o.z;
+	}
     template<typename S>
     vec3 operator*(const S scalar) const
 	{
 	    return vec3(x * scalar, y * scalar, z * scalar);
+	}
+    template <typename S>
+    void operator *=(const S scalar)
+	{
+	    x *= scalar;
+	    y *= scalar;
+	    z *= scalar;
 	}
     template<typename S>
     vec3 operator/(const S scalar) const
@@ -397,7 +477,14 @@ struct vec3
 	    y /= scalar;
 	    z /= scalar;
 	}
-
+    void identitylization()
+	{
+	    operator/=(module());
+	}
+    vec3 identity() const
+	{
+	    return operator/(module());
+	}
     bool operator<(const vec3& o) const
 	{
 	    return (x < o.x) && (y < o.y) && (z < o.z);
@@ -466,7 +553,7 @@ struct vec4
 	
 };
 
-typedef vec4<Float> vec4F;    
+typedef vec4<Float> vec4F;
 
 GB_PHYSICS_NS_END
 
