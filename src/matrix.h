@@ -24,7 +24,7 @@ struct mat2
 	{
 	    return mat2{{{1, 0}, {0, 1}}};
 	}
-    
+
     const col_type& operator[](const std::uint8_t idx) const
     {
 	assert(idx <= 1);
@@ -52,24 +52,24 @@ struct mat2
     }
 
     template<typename S>
-    mat2 operator * (const S scalar)
-	{
-	    mat2 ret = *this;
+    typename std::enable_if<is_scalar<S>::value, mat2>::type operator * (const S scalar)
+    {
+	mat2 ret = *this;
 
-	    ret *= scalar;
+	ret *= scalar;
 
-	    return ret;
-	}
-    
+	return ret;
+    }
+
     template<typename S>
-    mat2 & operator *= ( const S scalar)
+    typename std::enable_if<is_scalar<S>::value, mat2&>::type operator *= ( const S scalar)
     {
 	value[0] *= scalar;
 	value[1] *= scalar;
 
 	return *this;
     }
-	
+
 };
 template<typename T>
 mat2<T>vec2ColMultiplyRow(const vec2<T>& col, const vec2<T>& row)
@@ -104,7 +104,7 @@ struct mat3
 	}
 
     template<typename S>
-    mat3 & operator *= (const S scalar )
+    typename std::enable_if<is_scalar<S>::value, mat3&>::type operator *= (const S scalar )
     {
 	value[0] *= scalar;
 	value[1] *= scalar;
@@ -114,14 +114,14 @@ struct mat3
     }
 
     template<typename S>
-    mat3 operator * (const S scalar)
+    typename std::enable_if<is_scalar<S>::value, mat3>::type operator * (const S scalar)
 	{
 	    mat3 ret = *this;
 	    ret *= scalar;
 	    return ret;
 	}
     template<typename S>
-    mat3 & operator /= (const S scalar)
+    typename std::enable_if<is_scalar<S>::value, mat3&>::type operator /= (const S scalar)
 	{
 	    value[0] /= scalar;
 	    value[1] /= scalar;
@@ -130,7 +130,7 @@ struct mat3
 	    return *this;
 	}
     template<typename S>
-    mat3 operator / (const S scalar)
+    typename std::enable_if<is_scalar<S>::value, mat3>::type operator / (const S scalar)
 	{
 	    mat3 ret = *this;
 	    ret /= scalar;
@@ -140,14 +140,14 @@ struct mat3
     mat3 & operator -= (const mat3 & o)
     {
 	const col_type (&o_val) [3] = o.value;
-	
+
 	value[0] -= o_val[0];
 	value[1] -= o_val[1];
 	value[2] -= o_val[2];
-	    
+
 	return *this;
     }
-    
+
     mat3 operator - (const mat3 & o)
 	{
 	    mat3 ret = *this;
@@ -159,7 +159,7 @@ struct mat3
     {
 	return value[0] * col[0] + value[1] * col[1] + value[2] * col[2];
     }
-    
+
     mat3 operator * (const mat3 & o) const
     {
 	mat3 ret;
@@ -177,7 +177,7 @@ struct mat3
 	mat3 ret = operator*(o);
 
 	*this = ret;
-	
+
 	return *this;
     }
     void operator += (const mat3 & o)
@@ -203,12 +203,12 @@ struct mat3
     mat3 transpose() const
     {
 	mat3 ret(*this);
-	
+
 	col_type (&ret_cols)[3] = ret.value;
 	col_type & ret_col0 = ret_cols[0];
 	col_type & ret_col1 = ret_cols[1];
 	col_type & ret_col2 = ret_cols[2];
-	
+
 	std::swap(ret_col0[1], ret_col1[0]);
 	std::swap(ret_col0[2], ret_col2[0]);
 	std::swap(ret_col2[1], ret_col1[2]);
@@ -219,7 +219,9 @@ struct mat3
     mat3 eigenvectors() const
 	{
 	    /*
-	      QR algorithm ref@https://en.wikipedia.org/wiki/QR_decomposition
+	      TODO qr algorithm with shifts ref@http://people.inf.ethz.ch/arbenz/ewp/Lnotes/chapter4.pdf
+
+	      basic QR algorithm ref@https://en.wikipedia.org/wiki/QR_decomposition
 	      A = Q * R, Q is othogonal matrix, R is upper triangluar matrix
 	      let, Ak = Qk * Rk
 	      then form Ak+1 = Rk * Qk = Qk(-1) * Qk * Rk * Qk = Qk(-1) * Ak * Qk
@@ -240,14 +242,14 @@ struct mat3
 					   \|
 					    |V
 		       +--+--+--+--+--...------+
-		       |X +--+  |  |           .
+		       |X'+--+  |  |           .
 		       |1 |  |  |  |	       .
-		       |  |X +--+  |   	       .
+		       |  |X'+--+  |   	       .
 		       |  |2 |  |  | 	       |
-		       |  |  |X +--+--...------+
-		       |  |  |3 |X | 	       |
-		       |  |  |	|4 | 	    +--+
-		       |  |  |	|  | 	    |Xn|
+		       |  |  |X'+--+--...------+
+		       |  |  |3 |X'| 	       |
+		       |  |  |	|4 | 	   +---+
+		       |  |  |	|  |   	   |X'n|
 
               Xi is ith column of A
 	      X1'(|X1|* e1) is X1's reflection about the plane which orthogonal with Vector V(Unit vector)
@@ -258,17 +260,20 @@ struct mat3
 	      let Xi be the column of A, if Xi' is transformed to be the basis of the A, then
 	      A is transformed to be a triangular matrix.
 
-	      let X1' = |X1|e1, I is identity matrix, and V is point to X1, then V = (-X1' + X1)/|V| = (X1 - |X1|e1)/|V|
+	      let X1' = |X1|e1, I is identity matrix, and V is point to X1, 
+	      then V = (-X1' + X1)/|V| = (X1 - sign(-X1[1])*|X1|e1)/|V|
+	      NOTE!!!: sign(-X1[1]) is for avoding X1 - X1' cancellation
+
 	      X1' = X1 - 2 * cos<X1, V> * |X1| * V
 	          = X1 - 2 * (X1 dot V / |X1||V|) * |X1| * V
 		  = X1 - 2 * (X1 dot V) * V / |V| (V is unit vecotr, so |V| is 1)
 		  = X1 - V * 2(X1 dot V) (convert to matrix multiply)
 		  = X1 - V . 2(Vt . X1) = I . X1 - 2 . V . Vt . X1 = (I - 2.V.Vt) . X1
-		  
+
 	      let H = I - 2VVt,
               then X1' = H1 . X1
 	      ...
-	      
+
 	      eventually Hn ... H3.H2.H1 . A = R(triangluar matrix)
 	      ...
 	      A = H1(-1).H2(-1).H3(-1)...Hn(-1) . R
@@ -276,32 +281,34 @@ struct mat3
 	      because Hn is othogonal matrix
 	      then
 	      Q = H1tH2t...Hnt
-	      
+
 	    */
 
 	    std::function<void(const mat3<T>&, mat3<T>&, mat3<T>&)> qr_decomposition = [](const mat3<T>& A, mat3<T>& Q, mat3<T>& R)
 		{
 		    // 1st col
 		    mat3<T> H1 = mat3<T>::make_identity();
-		    
+
 		    const vec3<T>& col1 = A[0];
 		    if(col1[1] != 0 || col1[2] != 0)
 			{
 			    vec3<T> e1{1, 0, 0};
-			    vec3<T> V = col1 - col1 * (col1.module());
+			    vec3<T> V = col1 - e1 * (col1.module()) * sign(-col1[0]);
 			    V.identitylization();
 
 			    H1 = mat3<T>::make_identity() -= vec3ColMultiplyRow(V, V) *= 2;
 			}
-		    
+
 		    // 2nd col
+		    mat3<T> A_prime = H1 * A; //H2 . (H1 . A) = R !!!
+		    
 		    mat3<T> H2 = mat3<T>::make_identity();
 
-		    const vec2<T> col2{A[1][1], A[1][2]};
+		    const vec2<T> col2{A_prime[1][1], A_prime[1][2]};
 		    if(col2[1] != 0)
 			{
 			    vec2<T> e2{1, 0};
-			    vec2<T> V = col2 - col2 * (col2.module());
+			    vec2<T> V = col2 - e2 * (col2.module()) * sign(-col2[0]);
 			    V.identitylization();
 
 			    mat2<T> h2 = mat2<T>::make_identity() -= vec2ColMultiplyRow(V, V) *= 2;
@@ -312,7 +319,7 @@ struct mat3
 			    H2[2][2] = h2[1][1];
 			}
 
-		    R = H2 * H1;
+		    R = H2 * A_prime;	// R = H2 . H1 . A = H2 . A'
 		    Q = H1.transpose() * H2.transpose();
 		};
 

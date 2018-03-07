@@ -281,6 +281,26 @@ private:
     T* _data;
 };
 
+template<typename T>
+struct is_scalar : public std::false_type {};
+
+template<>
+struct is_scalar<signed char> : public std::true_type {};
+
+template<>
+struct is_scalar<unsigned char> : public std::true_type {};
+
+template<>
+struct is_scalar<int> : public std::true_type {};
+
+template <>
+struct is_scalar<unsigned int> : public std::true_type {};
+
+template <>
+struct is_scalar<float> : public std::true_type {};
+    
+template<>
+struct is_scalar<Float> : public std::true_type {};
 
 
 template<typename T>
@@ -352,16 +372,18 @@ struct vec2
 	}
 
     template<typename S>
-    vec2 operator /(const S scalar) const
+    typename std::enable_if<is_scalar<S>::value, vec2>::type operator /(const S scalar) const
 	{
 	    return vec2(x / scalar, y / scalar);
 	}
     
     template<typename S>
-    void operator /=(const S scalar)
+    typename std::enable_if<is_scalar<S>::value, vec2&>::type operator /=(const S scalar)
 	{
 	    x /= scalar;
 	    y /= scalar;
+
+	    return *this;
 	}
     void identitylization()
 	{
@@ -453,29 +475,32 @@ struct vec3
 	    z -= o.z;
 	}
     template<typename S>
-    vec3 operator*(const S scalar) const
+    typename std::enable_if<is_scalar<S>::value, vec3>::type operator*(const S scalar) const
 	{
 	    return vec3(x * scalar, y * scalar, z * scalar);
 	}
     template <typename S>
-    void operator *=(const S scalar)
+    typename std::enable_if<is_scalar<S>::value, vec3&>::type operator *=(const S scalar)
 	{
 	    x *= scalar;
 	    y *= scalar;
 	    z *= scalar;
+
+	    return *this;
 	}
     template<typename S>
-    vec3 operator/(const S scalar) const
+    typename std::enable_if<is_scalar<S>::value, vec3>::type operator/(const S scalar) const
 	{
 	    return vec3(x / scalar, y / scalar, z / scalar);
 	}
 
     template<typename S>
-    void operator/=(const S scalar)
+    typename std::enable_if<is_scalar<S>::value, vec3&>::type operator/=(const S scalar)
 	{
 	    x /= scalar;
 	    y /= scalar;
 	    z /= scalar;
+	    return *this;
 	}
     void identitylization()
 	{
@@ -554,6 +579,15 @@ struct vec4
 };
 
 typedef vec4<Float> vec4F;
+
+template<typename T>
+std::int8_t sign(const T val)
+{
+    if(val < 0)
+	return -1;
+    else
+	return 1;
+}
 
 GB_PHYSICS_NS_END
 
