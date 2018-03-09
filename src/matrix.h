@@ -284,6 +284,8 @@ struct mat3
 
 	    */
 
+	    bool bSymmetric = (value[0][1] == value[1][0] && value[0][2] == value[2][0] && value[1][2] && value[2][1]);
+	    
 	    std::function<void(const mat3<T>&, mat3<T>&, mat3<T>&)> qr_decomposition = [](const mat3<T>& A, mat3<T>& Q, mat3<T>& R)
 		{
 		    // 1st col
@@ -330,9 +332,14 @@ struct mat3
 		{
 		    qr_decomposition(A, Q, R);
 		    A = R * Q;
-		    ret *= Q;
+		    if(bSymmetric)
+			ret *= Q;
 		}
 
+	    if(!bSymmetric)
+		{
+		    // TODO
+		}
 	    return ret;
 	}
 };
