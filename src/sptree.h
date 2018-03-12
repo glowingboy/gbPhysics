@@ -298,7 +298,7 @@ public:
 	}
 private:
 	// children insert
-	void _insert(_Ele & ele, const vec3<_BB_Unit>& ap)
+	void _insert(const _Ele & ele, const vec3<_BB_Unit>& ap)
 	{
 		if (_childLenSide > _minOctanLenSide)
 		{
@@ -326,7 +326,7 @@ private:
 	}
 
 public:
-	void insert(_Ele & ele)
+	void insert(const _Ele & ele)
 	{
 		//	    if(_ctn(ele, _bb))
 		_insert(ele, _apg(ele));
@@ -335,7 +335,7 @@ public:
 	}
 
 private:
-	void _insert(_Ele & ele, octree * & oct, const vec3<_BB_Unit> & ap)
+	void _insert(const _Ele & ele, octree * & oct, const vec3<_BB_Unit> & ap)
 	{
 		if (_childLenSide > _minOctanLenSide)
 		{
@@ -360,7 +360,7 @@ private:
 	}
 
 public:
-	void insert(_Ele & ele, octree* & oct)
+	void insert(const _Ele & ele, octree* & oct)
 	{
 		// if(_ctn(ele, _bb))
 		_insert(ele, oct, _apg(ele));
@@ -396,7 +396,7 @@ private:
     }
 
 public:    
-    void remove_here(_Ele & ele)
+    void remove_here(const _Ele & ele)
     {
 	typename std::set<_Ele>::iterator i = _eles.find(ele);
 	if( i != _eles.end())
@@ -407,7 +407,7 @@ public:
     }
 
 private:    
-    void _remove(_Ele& ele, const vec3<_BB_Unit> & ap)
+    void _remove(const _Ele& ele, const vec3<_BB_Unit> & ap)
     {
 	const std::uint8_t idx = _getPossiableOctanIdx(ap);
 	const aabb<_BB_Unit>& octanBB = _octanBB[idx];
@@ -423,11 +423,11 @@ private:
     }
 
 public:
-    void remove(_Ele & ele)
+    void remove(const _Ele & ele)
     {
 	_remove(ele, _apg(ele));
     }
-	    
+
     std::vector<_Ele> query_intersect(const aabb<_BB_Unit>& q) const
 	{
 	    std::vector<_Ele> ret;

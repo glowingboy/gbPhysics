@@ -1,6 +1,5 @@
 #pragma once
-#include "type.h"
-#include "math.h"
+#include "matrix.h"
 
 #include <limits>
 
@@ -44,6 +43,34 @@ struct spherebb
 		return sqDistance(o) <= std::pow(radius - o.radius, 2);
 	    else
 		return false;
+	}
+
+    spherebb operator *(const mat4<T>& mat) const
+	{
+	    T maxScale = mat[0][0];
+	    T tmp = mat[1][1];
+	    if(tmp > maxScale)
+		maxScale = tmp;
+	    tmp = mat[2][2];
+	    if(tmp > maxScale)
+		maxScale = tmp;
+	    
+	    return spherebb(mat * centre, radius * maxScale);
+	}
+
+    void operator *= (const mat4<T>& mat)
+	{
+	    centre = mat * centre;
+	    
+	    T maxScale = mat[0][0];
+	    T tmp = mat[1][1];
+	    if(tmp > maxScale)
+		maxScale = tmp;
+	    tmp = mat[2][2];
+	    if(tmp > maxScale)
+		maxScale = tmp;
+	    
+	    radius *= maxScale;
 	}
 		
     vec3<T> centre;
@@ -123,8 +150,41 @@ struct aabb
 };
 
 template<typename T>
-spherebb<T> genSphereBB(const T* data, const std::size_t count)
+spherebb<T> genSphereBB(const vec3<T>* data, const std::size_t count)
 {
+    const mat3<T> axes = naturalAxes(data, count);
+
+    const vec3<T>& primaryAxis = axes[0];
+
+    // projA-B = |A| * cos<A,B> = |A| * (A dot B) / (|A||B|) = A dot B / |B|
+    T projMin = dot(*data, primaryAxis);
+    T projMax = projMin;
     
+    const vec3<T>* min = data;
+    const vec3<T>* max = min;
+    
+    for(std::size_t i = 1; i < count; i++)
+    {
+	const vec3<T>* cur = data + i;
+
+	const T curProj = dot(*cur, primaryAxis);
+
+	if(projMin > curProj)
+	{
+	    projMin = curProj;
+	    min = cur;
+
+	    continue;
+	}
+
+	if(projMax < curProj)
+	{
+	    projMax = curProj;
+	    max = cur;
+	}
+    }
+
+    return spherebb<T>(*min/2 + *max/2, projMax/2 - projMin/2);
 }
+
 GB_PHYSICS_NS_END

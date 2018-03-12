@@ -182,7 +182,7 @@ struct mat3
     }
     void operator += (const mat3 & o)
 	{
-	    col_type (&o_val) [3] = o.value;
+	    const col_type (&o_val) [3] = o.value;
 	    value[0] += o_val[0];
 	    value[1] += o_val[1];
 	    value[2] += o_val[2];
@@ -294,7 +294,7 @@ struct mat3
 		    const vec3<T>& col1 = A[0];
 		    if(col1[1] != 0 || col1[2] != 0)
 			{
-			    vec3<T> e1{1, 0, 0};
+			    const vec3<T> e1{1, 0, 0};
 			    vec3<T> V = col1 - e1 * (col1.module()) * sign(-col1[0]);
 			    V.identitylization();
 
@@ -302,14 +302,14 @@ struct mat3
 			}
 
 		    // 2nd col
-		    mat3<T> A_prime = H1 * A; //H2 . (H1 . A) = R !!!
+		    const mat3<T> A_prime = H1 * A; //H2 . (H1 . A) = R !!!
 		    
 		    mat3<T> H2 = mat3<T>::make_identity();
 
 		    const vec2<T> col2{A_prime[1][1], A_prime[1][2]};
 		    if(col2[1] != 0)
 			{
-			    vec2<T> e2{1, 0};
+			    const vec2<T> e2{1, 0};
 			    vec2<T> V = col2 - e2 * (col2.module()) * sign(-col2[0]);
 			    V.identitylization();
 
@@ -431,9 +431,6 @@ struct mat4
 	    return mat4{{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}};
 	}
 
-    mat4(const col_type & col0, const col_type & col1, const col_type & col2, const col_type & col3):
-	value{col0, col1, col2, col3}
-    {}
     const vec4<T>& operator[](const std::uint8_t idx) const
 	{
 	    assert(idx <= 3);
@@ -453,7 +450,7 @@ struct mat4
     {
 	const mat4& self = *this;
 
-	return mat4(self * o[0], self * o[1] , self * o[2], self * o[3]);
+	return mat4{{self * o[0], self * o[1] , self * o[2], self * o[3]}};
     }
     void operator *= (const mat4 & o)
     {

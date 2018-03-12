@@ -464,6 +464,14 @@ struct vec3
 	{
 	    return vec3(x + o.x, y + o.y, z + o.z);
 	}
+    vec3 & operator +=(const vec3& o)
+	{
+	    x += o.x;
+	    y += o.y;
+	    z += o.z;
+
+	    return *this;
+	}
     vec3 operator-(const vec3& o) const
 	{
 	    return vec3(x - o.x, y - o.y, z - o.z);
@@ -547,6 +555,12 @@ vec3<T> meanVec3(const vec3<T> * data, const std::size_t count)
     return ret;
 }
 
+template <typename T>
+T dot(const vec3<T>& l, const vec3<T>& r)
+{
+    return l.x * r.x + l.y * r.y + l.z * r.z;
+}
+
 
 template <typename T>
 struct vec4
@@ -555,7 +569,7 @@ struct vec4
     {
 	struct { T x, y, z, w; };
 	struct { T r, g, b, a; };
-	struct { T s, t, u, v; };
+	struct { T s, t, p, q; };
     };
 
     vec4(): x(0), y(0), z(0), w(0){}
@@ -575,7 +589,16 @@ struct vec4
 	    assert(idx <=3);
 	    return (&(this->x))[idx];
 	}
-	
+
+    vec4<T> operator + (const vec4<T>& o) const
+	{
+	    return vec4( x + o.x, y + o.y, z + o.z, w + o.w);
+	}
+    template<typename S>
+    typename std::enable_if<is_scalar<S>::value, vec4<T>>::type operator * (const S scalar) const
+	{
+	    return vec4(x * scalar, y * scalar, z * scalar, w * scalar);
+	}
 };
 
 typedef vec4<Float> vec4F;
