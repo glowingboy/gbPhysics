@@ -260,7 +260,7 @@ struct mat3
 	      let Xi be the column of A, if Xi' is transformed to be the basis of the A, then
 	      A is transformed to be a triangular matrix.
 
-	      let X1' = |X1|e1, I is identity matrix, and V is point to X1, 
+	      let X1' = |X1|e1, I is identity matrix, and V is point to X1,
 	      then V = (-X1' + X1)/|V| = (X1 - sign(-X1[1])*|X1|e1)/|V|
 	      NOTE!!!: sign(-X1[1]) is for avoding X1 - X1' cancellation
 
@@ -285,7 +285,7 @@ struct mat3
 	    */
 
 	    bool bSymmetric = (value[0][1] == value[1][0] && value[0][2] == value[2][0] && value[1][2] && value[2][1]);
-	    
+
 	    std::function<void(const mat3<T>&, mat3<T>&, mat3<T>&)> qr_decomposition = [](const mat3<T>& A, mat3<T>& Q, mat3<T>& R)
 		{
 		    // 1st col
@@ -303,7 +303,7 @@ struct mat3
 
 		    // 2nd col
 		    const mat3<T> A_prime = H1 * A; //H2 . (H1 . A) = R !!!
-		    
+
 		    mat3<T> H2 = mat3<T>::make_identity();
 
 		    const vec2<T> col2{A_prime[1][1], A_prime[1][2]};
@@ -536,5 +536,51 @@ mat4<T> translateMat(const vec3<T>& v)
 }
 
 
+// symmetric frustum
+template <typename T>
+struct frustum
+{
+    /*
+      perspective frustum
+       	       l---------------r
+      		\      |      /
+		 \     |     /
+		  \    |    /
+		   \ near  /
+      		    \  |  /
+		     \ | /
+      		      \|/
+		      fov
+
+      r = near * tan(fov/2)
+      l = -r;
+      
+      since aspectRatio = height / width
+      so t = r * aspectRatio;
+      b = -t;
+    */
+    frustum(const float fov,
+	    const float aspectRatio,
+	    const float clipNear,
+	    const float clipFar):
+	near(clipNear),
+	far(clipFar)
+    {
+	right =  near * std::tan(gb::math::degree2radian(fov));
+	left = - right;
+
+	top = right * aspectRation;
+	bottom = - top;
+    }
+
+    mat4<T> perspectiveProjectionMatrix() const
+    {
+	/*
+	  1st: projection map
+	  2nd: linear map form [l, r] to [-1, 1] (map to NDC)
+	 */
+    }
+    T left, right, bottom, top, near, far;
+};
 
 GB_PHYSICS_NS_END
