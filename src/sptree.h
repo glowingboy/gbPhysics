@@ -428,10 +428,16 @@ public:
 	_remove(ele, _apg(ele));
     }
 
-    std::vector<_Ele> query_intersect(const aabb<_BB_Unit>& q) const
+    /*
+      @param intersectMethod, 
+      shuold override operator() to operator()(const aabb<_BB_Unit>& aabb, const queryObject & q); 
+     */
+    template <typename queryObject, typename intersectMethod>
+    std::vector<_Ele> query_intersect(const queryObject& q) const
 	{
 	    std::vector<_Ele> ret;
-	    if(q.intersect(_bb))
+	    intersectMethod im;
+	    if(im(_bb, q))
 	    {
 		ret.insert(ret.end(), _eles.begin(), _eles.end());
 
@@ -440,7 +446,7 @@ public:
 		    octree*& child = _children[i];
 		    if(child != nullptr)
 		    {
-			std::vector<_Ele> subRet = child->query_intersect(q);
+			std::vector<_Ele> subRet = child->query_intersect<queryObject, intersectMethod>(q);
 			ret.insert(ret.end(), subRet.begin(), subRet.end());
 		    }
 		}
