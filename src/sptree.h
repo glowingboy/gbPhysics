@@ -436,7 +436,7 @@ public:
     std::vector<_Ele> query_intersect(const queryObject& q) const
 	{
 	    std::vector<_Ele> ret;
-	    intersectMethod im;
+	    const intersectMethod im;
 	    if(im(_bb, q))
 	    {
 		ret.insert(ret.end(), _eles.begin(), _eles.end());

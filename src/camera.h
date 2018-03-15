@@ -41,8 +41,8 @@ struct frustum
 	top = right * aspectRation;
 	bottom = - top;
 
-	//sphereBB = genSphereBB<T>();
-	updateAABB();
+	sphereBB = genSphereBB<T>();
+	// updateAABB();
 	
 	projectionMatrix = perspectiveProjectionMatrix<T>();
     }
@@ -133,8 +133,8 @@ struct frustum
 	clipNear = clipNear_;
 	clipFar = clipFar_;
 
-	//sphereBB = genSphereBB<T>();
-	updateAABB();
+	sphereBB = genSphereBB<T>();
+	//updateAABB();
 	
 	projectionMatrix = orthographicProjectionMatrix<T>();
     }
@@ -169,29 +169,30 @@ struct frustum
 	return ret;
     }
 
-    // spherebb<T> genSphereBB() const
+    spherebb<T> genSphereBB() const
+    	{
+    	    T tmp = (right - left) / 2;
+    	    T radius = tmp;
+    	    tmp = (top - bottom) / 2;
+    	    if(tmp > radius)
+    		radius = tmp;
+
+    	    tmp = (clipFar - clipNear) / 2;
+    	    if(tmp > radius)
+    		radius = tmp;
+
+    	    return spherebb<T>(vec3<T>(), radius);
+    	}
+
+    // void updateAABB()
     // 	{
-    // 	    T tmp = (right - left) / 2;
-    // 	    T radius = tmp;
-    // 	    tmp = (top - bottom) / 2;
-    // 	    if(tmp > radius)
-    // 		radius = tmp;
-
-    // 	    tmp = (clipFar - clipNear) / 2;
-    // 	    if(tmp > radius)
-    // 		radius = tmp;
-
-    // 	    return spherebb<T>(vec3<T>(), radius);
+    // 	    AABB.set(vec3<T>(left, bottom, clipNear), vec3<T>(right, top, clipFar));
     // 	}
-
-    void updateAABB()
-	{
-	    AABB.set(vec3<T>(left, bottom, clipNear), vec3<T>(right, top, clipFar));
-	}
+    
     T left, right, bottom, top, clipNear, clipFar;
     mat4<T> projectionMatrix;
-    //spherebb<T> spereBB;
-    aabb<T> AABB;
+    spherebb<T> sphereBB;
+    //aabb<T> AABB;
 };
 
 
