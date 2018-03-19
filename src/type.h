@@ -574,6 +574,15 @@ struct vec4
 
     vec4(): x(0), y(0), z(0), w(0){}
     vec4(T x_, T y_, T z_, T w_): x(x_), y(y_), z(z_), w(w_){}
+    
+    vec4(const vec3<T>& o):
+	x(o.x), y(o.y), z(o.z), w(1)
+	{}
+    
+    explicit operator vec3<T>() const
+	{
+	    return vec3<T>(x, y, z);
+	}
     void operator=(const vec3<T>& v3)
 	{
 	    std::memcpy(this, &v3, 3 * sizeof(T));

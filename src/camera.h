@@ -27,25 +27,25 @@ struct frustum
       so t = r * aspectRatio;
       b = -t;
     */
-    set(const float fov,
-	    const float aspectRatio,
-	    const float clipNear_,
-	    const float clipFar_)
-    {
-	clipNear = clipNear_;
-	clipFar = clipFar_;
+    void set(const float fov,
+	     const float aspectRatio,
+	     const float clipNear_,
+	     const float clipFar_)
+	{
+	    clipNear = clipNear_;
+	    clipFar = clipFar_;
 	
-	right =  clipNear * std::tan(gb::math::degree2radian(fov));
-	left = - right;
+	    right =  clipNear * std::tan(gb::math::degree2radian(fov));
+	    left = - right;
 
-	top = right * aspectRation;
-	bottom = - top;
+	    top = right * aspectRation;
+	    bottom = - top;
 
-	sphereBB = genSphereBB<T>();
-	// updateAABB();
+	    sphereBB = genSphereBB<T>();
+	    // updateAABB();
 	
-	projectionMatrix = perspectiveProjectionMatrix<T>();
-    }
+	    projectionMatrix = perspectiveProjectionMatrix<T>();
+	}
 
     mat4<T> perspectiveProjectionMatrix() const
     {
@@ -119,25 +119,25 @@ struct frustum
     /*
       orthographic frustum
      */
-    set(const T left_,
-	    const T right_,
-	    const T bottom_,
-	    const T top_,
-	    const T clipNear_,
-	    const T clipFar_)
-    {
-	left = left_;
-	right = right_;
-	bottom = bottom_;
-	top = top_;
-	clipNear = clipNear_;
-	clipFar = clipFar_;
+    void set(const T left_,
+	     const T right_,
+	     const T bottom_,
+	     const T top_,
+	     const T clipNear_,
+	     const T clipFar_)
+	{
+	    left = left_;
+	    right = right_;
+	    bottom = bottom_;
+	    top = top_;
+	    clipNear = clipNear_;
+	    clipFar = clipFar_;
 
-	sphereBB = genSphereBB<T>();
-	//updateAABB();
+	    sphereBB = genSphereBB<T>();
+	    //updateAABB();
 	
-	projectionMatrix = orthographicProjectionMatrix<T>();
-    }
+	    projectionMatrix = orthographicProjectionMatrix<T>();
+	}
     
     /*
       orthographic projection

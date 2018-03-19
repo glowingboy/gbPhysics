@@ -446,6 +446,7 @@ struct mat4
     {
 	return value[0] * v[0] + value[1] * v[1] + value[2] * v[2] + value[3] * v[3];
     }
+    
     mat4 operator * (const mat4 & o) const
     {
 	const mat4& self = *this;

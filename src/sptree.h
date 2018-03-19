@@ -443,7 +443,7 @@ public:
 
 		for(std::uint8_t i = 0; i < 8; i++)
 		{
-		    octree*& child = _children[i];
+		    const octree* child = _children[i];
 		    if(child != nullptr)
 		    {
 			std::vector<_Ele> subRet = child->query_intersect<queryObject, intersectMethod>(q);
@@ -498,6 +498,7 @@ constexpr _ArbitraryPointGetter octree<_Ele, _Contain, _ArbitraryPointGetter, _B
 
 template <typename _Ele, typename _Contain, typename _ArbitraryPointGetter, typename _BB_Unit>
 #ifdef _MSC_VER
+#undef min
 const vec3<_BB_Unit> octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_minOctanLenSide{std::numeric_limits<_BB_Unit>::min() * 2};
 #else
 constexpr vec3<_BB_Unit> octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_minOctanLenSide;

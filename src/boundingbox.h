@@ -55,12 +55,12 @@ struct spherebb
 	    if(tmp > maxScale)
 		maxScale = tmp;
 	    
-	    return spherebb(mat * centre, radius * maxScale);
+	    return spherebb((vec3<T>)(mat * vec4<T>(centre)), radius * maxScale);
 	}
 
     void operator *= (const mat4<T>& mat)
 	{
-	    centre = mat * centre;
+	    centre = (vec3<T>)(mat * vec4<T>(centre));
 	    
 	    T maxScale = mat[0][0];
 	    T tmp = mat[1][1];
