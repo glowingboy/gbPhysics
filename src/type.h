@@ -579,6 +579,21 @@ struct vec4
 	x(o.x), y(o.y), z(o.z), w(1)
 	{}
     
+    vec4(const typename std::conditional<is_Float<T>::value, std::vector<float>, std::vector<T>>::type& v):
+	x(v[0]),
+	y(v[1]),
+	z(v[2]),
+	w(v[3])
+    {
+	assert(v.size() >= 4);
+    }
+
+    void operator=(const typename std::conditional<is_Float<T>::value, std::vector<float>, std::vector<T>>::type& v)
+    {
+	assert(v.size() >= 4);
+	std::memcpy(this, v.data(), 4 * sizeof(T));
+    }
+    
     explicit operator vec3<T>() const
 	{
 	    return vec3<T>(x, y, z);
