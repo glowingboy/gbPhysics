@@ -38,13 +38,13 @@ struct frustum
 	    right =  clipNear * std::tan(gb::math::degree2radian(fov));
 	    left = - right;
 
-	    top = right * aspectRation;
+	    top = right * aspectRatio;
 	    bottom = - top;
 
-	    sphereBB = genSphereBB<T>();
+	    sphereBB = genSphereBB();
 	    // updateAABB();
 	
-	    projectionMatrix = perspectiveProjectionMatrix<T>();
+	    projectionMatrix = perspectiveProjectionMatrix();
 	}
 
     mat4<T> perspectiveProjectionMatrix() const
@@ -133,10 +133,10 @@ struct frustum
 	    clipNear = clipNear_;
 	    clipFar = clipFar_;
 
-	    sphereBB = genSphereBB<T>();
+	    sphereBB = genSphereBB();
 	    //updateAABB();
 	
-	    projectionMatrix = orthographicProjectionMatrix<T>();
+	    projectionMatrix = orthographicProjectionMatrix();
 	}
     
     /*
