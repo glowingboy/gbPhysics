@@ -11,6 +11,7 @@
 #include <limits>
 #include <vector>
 #include <type_traits>
+#include <cstring>
 GB_PHYSICS_NS_BEGIN
 
 //**************** fundamental type ****************
@@ -87,7 +88,7 @@ union Float
     	{
     	    return f;
     	}
-    inline constexpr operator float& ()
+    inline operator float& ()
 	{
 	    return f;
 	}
