@@ -57,11 +57,11 @@ namespace gb
 	  using a binary tree to denote this procedure will like bellow.
 	 
        	  +-----------------W--------------------+
-       	+-+-----------------+--------------------+
-	| |	     	    |	             	 |
-        h |A  occupied	    |empty           	 |
-        | |                 |                    |
-        +-+-----------------+--------------------+
+	  +-+-----------------+--------------------+
+	  | |	     	    |	             	 |
+	  h |A  occupied	    |empty           	 |
+	  | |                 |                    |
+	  +-+-----------------+--------------------+
 	  +--------w--------+                    |
        	  |empty                             	 |
 	  |			             	 |
@@ -70,36 +70,36 @@ namespace gb
 	  |                                      |
 	  +--------------------------------------+
 
-          		     a(axis:Y, value h)
-	  		    /
-			   /
-			  b(axis:X, value w)
-	  		 /
-			/
-		       A
+	  a(axis:Y, value h)
+	  /
+	  /
+	  b(axis:X, value w)
+	  /
+	  /
+	  A
 
-	 TREE'S PROPERTIES
-	 all children of node with Y direction split line and value h, 
-	 will inherit node's boundary[X].
-	 left child of node will have boundary[Y] = h,
-	 and right will have boundary[Y] = node.boundary[Y] - h
-	 and node with X direcion is the same as Y, except an addition property
-	 which is left child always occupied.
+	  TREE'S PROPERTIES
+	  all children of node with Y direction split line and value h, 
+	  will inherit node's boundary[X].
+	  left child of node will have boundary[Y] = h,
+	  and right will have boundary[Y] = node.boundary[Y] - h
+	  and node with X direcion is the same as Y, except an addition property
+	  which is left child always occupied.
 
-	 a.l.boundary[X] = a.r.boundary[X] = a.boundary[X]
-	 a.l.boundary[Y] = h
-	 a.r.boundary[Y] = a.boundary[Y] -h
+	  a.l.boundary[X] = a.r.boundary[X] = a.boundary[X]
+	  a.l.boundary[Y] = h
+	  a.r.boundary[Y] = a.boundary[Y] -h
 
-	 b.l.boundary[Y] = b.r.boundary[Y] = b.boundary[Y]
-	 b.l.boundary[X] = w
-	 b.r.boundary[X] = b.boundary[X] - w
+	  b.l.boundary[Y] = b.r.boundary[Y] = b.boundary[Y]
+	  b.l.boundary[X] = w
+	  b.r.boundary[X] = b.boundary[X] - w
 
-	 INIT STATE
-	 creating a node with boundary, boundary[X] = W(fixed width), boundary[Y] = infinite large,
-	 spliting direcion can be either Y or X(using Y will always insert to the left child, 
-	 using X will always insert to the right child).
+	  INIT STATE
+	  creating a node with boundary, boundary[X] = W(fixed width), boundary[Y] = infinite large,
+	  spliting direcion can be either Y or X(using Y will always insert to the left child, 
+	  using X will always insert to the right child).
 
-	 */
+	*/
 
 	template<typename Side>
 	struct binay_bin_packing_node_data
@@ -137,27 +137,27 @@ namespace gb
 				    binary_bin_packing_node* parent_):
 		data(split_axis, side),
 		parent(parent_)
-	    {}
+		{}
 
 	    binary_bin_packing_node(binary_bin_packing_node* parent_):
 		parent(parent_)
-	    {}
+		{}
 
 	private:
 	    binary_bin_packing_node* _new_branch(const Sprite& sprite, binary_bin_packing_node* parent_)
-	    {
-		binary_bin_packing_node* y = new binary_bin_packing_node(axis::y, sprite.height, parent_);
-		y->l = new binary_bin_packing_node(axis::x, sprite.width, y);
-		y->l->l = new binary_bin_packing_node(((binary_bin_packing_node*)y->l));
-		return y;
-	    }
+		{
+		    binary_bin_packing_node* y = new binary_bin_packing_node(axis::y, sprite.height, parent_);
+		    y->l = new binary_bin_packing_node(axis::x, sprite.width, y);
+		    y->l->l = new binary_bin_packing_node(((binary_bin_packing_node*)y->l));
+		    return y;
+		}
 	    
 	    void _walking_up(const Sprite& sprite, Side (&boundary)[2], Side (&location)[2])
-	    {
-		/*walk up to different branch. because of always traversing left child first, 
-		  so parent's right child is always untraversed branch, unless i am at traversing
-		  this branch now.
-		  So, should always find a node is left child of it's parent.
+		{
+		    /*walk up to different branch. because of always traversing left child first, 
+		      so parent's right child is always untraversed branch, unless i am at traversing
+		      this branch now.
+		      So, should always find a node is left child of it's parent.
 		    */
 
 		    //finding a node at left child of it's parent
@@ -216,10 +216,10 @@ namespace gb
 		    location[1] += split_value;
 		    if(sprite.width <= boundary[0] && sprite.height <= boundary[1])
 		    {
-		    if(rightNode != nullptr)
-			((binary_bin_packing_node*)rightNode)->insert(sprite, boundary, location);
-		    else
-			rightNode = _new_branch(sprite, parentNode);
+			if(rightNode != nullptr)
+			    ((binary_bin_packing_node*)rightNode)->insert(sprite, boundary, location);
+			else
+			    rightNode = _new_branch(sprite, parentNode);
 		    }
 		    else//back from right
 		    {
@@ -227,74 +227,74 @@ namespace gb
 			parentNode->_walking_up(sprite, boundary, location);
 		    }
 			
-	    }
+		}
 	public:
 	    void insert(const Sprite& sprite, Side (&boundary)[2], Side (&location)[2])
-	    {
-		if(data.split_axis == axis::x)
 		{
-		    //left always be occupied, so only right shuld be checked
+		    if(data.split_axis == axis::x)
+		    {
+			//left always be occupied, so only right shuld be checked
 
-		    //new boundary of right
-		    boundary[0] = boundary[0] - data.split_value;
-		    if(sprite.width <= boundary[0] && sprite.height <= boundary[1])
-		    {
-			location[0] += data.split_value;
-			if(r != nullptr)
-			    ((binary_bin_packing_node*)r)->insert(sprite, boundary, location);
-			else
-			    r = _new_branch(sprite, this);
-		    }
-		    else//walking up
-		    {
-			boundary[0] += data.split_value;
-			_walking_up(sprite, boundary, location);
-		    }
-			
-		}
-		else if(data.split_axis == axis::y)
-		{
-		    //left child boundary
-		    Side old_boundary_y = boundary[1];
-		    boundary[1] = data.split_value;
-		    if(sprite.width <= boundary[0] && sprite.height <= boundary[1])//go to left
-		    {
-			assert(l != nullptr);
-			((binary_bin_packing_node*)l)->insert(sprite, boundary, location);
-		    }
-		    else//go to right
-		    {
-			boundary[1] = old_boundary_y;
-			boundary[1] = boundary[1] - data.split_value;
-
+			//new boundary of right
+			boundary[0] = boundary[0] - data.split_value;
 			if(sprite.width <= boundary[0] && sprite.height <= boundary[1])
 			{
-			    location[1] += data.split_value;
+			    location[0] += data.split_value;
 			    if(r != nullptr)
 				((binary_bin_packing_node*)r)->insert(sprite, boundary, location);
 			    else
 				r = _new_branch(sprite, this);
 			}
-			else
+			else//walking up
 			{
-			    boundary[1] += data.split_value;
+			    boundary[0] += data.split_value;
 			    _walking_up(sprite, boundary, location);
 			}
-
+			
 		    }
+		    else if(data.split_axis == axis::y)
+		    {
+			//left child boundary
+			Side old_boundary_y = boundary[1];
+			boundary[1] = data.split_value;
+			if(sprite.width <= boundary[0] && sprite.height <= boundary[1])//go to left
+			{
+			    assert(l != nullptr);
+			    ((binary_bin_packing_node*)l)->insert(sprite, boundary, location);
+			}
+			else//go to right
+			{
+			    boundary[1] = old_boundary_y;
+			    boundary[1] = boundary[1] - data.split_value;
+
+			    if(sprite.width <= boundary[0] && sprite.height <= boundary[1])
+			    {
+				location[1] += data.split_value;
+				if(r != nullptr)
+				    ((binary_bin_packing_node*)r)->insert(sprite, boundary, location);
+				else
+				    r = _new_branch(sprite, this);
+			    }
+			    else
+			    {
+				boundary[1] += data.split_value;
+				_walking_up(sprite, boundary, location);
+			    }
+
+			}
+		    }
+
 		}
 
-	    }
-
 	    Side bin_height()const
-	    {
-		assert(data.split_axis == axis::y);
-		Side rChildHeight = 0;
-		if(r != nullptr)
-		    rChildHeight = ((binary_bin_packing_node*)r)->bin_height();
+		{
+		    assert(data.split_axis == axis::y);
+		    Side rChildHeight = 0;
+		    if(r != nullptr)
+			rChildHeight = ((binary_bin_packing_node*)r)->bin_height();
 
-		return rChildHeight + data.split_value;
-	    }
+		    return rChildHeight + data.split_value;
+		}
 
 	    binary_bin_packing_node* parent;//parent
 	    binay_bin_packing_node_data<Side> data;
@@ -319,15 +319,15 @@ namespace gb
 		std::for_each(sprites.begin(),
 			      sprites.end(),
 			      [&maxWidth, &area](Sprite& sprite)
-				  {
-				      const std::uint32_t width = sprite.width;
-				      if(maxWidth < width)
-					  maxWidth = width;
-				      area += width * sprite.height;
-				  });
-			      width = std::sqrt(area);
-			      if(width < maxWidth)
-				  width = maxWidth;
+			      {
+				  const std::uint32_t width = sprite.width;
+				  if(maxWidth < width)
+				      maxWidth = width;
+				  area += width * sprite.height;
+			      });
+		width = (std::uint32_t)std::ceil(std::sqrt(area));
+		if(width < maxWidth)
+		    width = maxWidth;
 	    }
 
 	    if(width == 0)
@@ -358,13 +358,13 @@ namespace gb
 	    array_2d<Pixel> bin(height, width);
 	    
 	    //2.fill up bin
-	    for(int i = 0; i < sprites.size(); i++)
+	    for(std::size_t i = 0; i < sprites.size(); i++)
 	    {
 		Sprite& sprite = sprites[i];
 		std::array<std::uint32_t, 2>& location = locations[i];
 		bin.insert(location, sprite.data());
-		const float left = location[0];
-		const float top = location[1];
+		const float left = ((float)location[0]);
+		const float top = ((float)location[1]);
 		sprite.uv_l = left / width;
 		sprite.uv_t = top / height;
 		sprite.uv_r = (left + sprite.width) / width;
