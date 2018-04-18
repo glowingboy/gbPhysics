@@ -3,6 +3,7 @@
 #include "type.h"
 #include "math.h"
 #include <utility>
+#include <functional>
 
 /*
   COLUMN MAJOR ORDER
