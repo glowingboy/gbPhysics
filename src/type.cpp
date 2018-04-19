@@ -2,30 +2,36 @@
 
 using namespace gb::physics;
 
-void bit_vector::reserve(const size_t capacity)
+bit_vector::~bit_vector()
+{
+    clear();
+}
+
+void bit_vector::clear()
 {
     delete [] _data;
+    _data = nullptr;
 
-    const size_t byteSize = capacity / 8 + (capacity % 8 == 0 ? 0 : 1);
-
-    _data = new std::uint8_t[byteSize];
-    std::memset(_data, 0, byteSize);
-
-    _capacity = byteSize * 8;
+    _capacity = 0;
     _curSize = 0;
 }
 
-void bit_vector::realloc(const size_t capacity)
+void bit_vector::reserve(const size_t capacity)
 {
+    if(capacity == _capacity)
+	return;
+    
     const size_t byteSize = capacity / 8 + (capacity % 8 == 0 ? 0 : 1);
     _capacity = byteSize * 8;
-    std::uint8_t* newData = new std::uint8_t[byteSize];
+    std::uint8_t* newData = new std::uint8_t[byteSize]{0};
     
     const size_t cpSize = _curSize <= capacity ? _curSize : capacity;
     _curSize = cpSize;
     
     if(cpSize != 0)
     {
+	assert(_data != nullptr);
+	
 	const size_t preFullByteSize = cpSize / 8 ;
 	memcpy(newData, _data, preFullByteSize);
 
@@ -44,6 +50,7 @@ void bit_vector::realloc(const size_t capacity)
 
     _data = newData;
 }
+
 void bit_vector::insert(const size_t beginIdx, const size_t size, const std::uint8_t bitVal)
 {
     assert(bitVal <= 1);
@@ -51,7 +58,7 @@ void bit_vector::insert(const size_t beginIdx, const size_t size, const std::uin
 	return;
     
     if(beginIdx + size > _capacity)
-	realloc( 2 * _capacity);
+	reserve( 2 * _capacity);
 
     size_t leftSize = size;
     size_t byteIdx = beginIdx / 8;

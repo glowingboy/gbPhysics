@@ -108,15 +108,11 @@ public:
 	_curSize(0),
 	_capacity(0)
 	{}
-    inline ~bit_vector()
-	{
-	    delete[] _data;
-	    _data = nullptr;
-	}
+    ~bit_vector();
     void reserve(const std::size_t capacity);
-    void realloc(const std::size_t capacity);
     void insert(const std::size_t beginIdx, const std::size_t size, const std::uint8_t bitVal);
     std::uint8_t operator[](const std::size_t index) const;
+    void clear();
 private:
     std::uint8_t* _data;
     std::size_t _curSize;//bit size
