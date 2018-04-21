@@ -13,12 +13,12 @@ array_2d<std::uint8_t> gb::image::signed_distance_field(const bit_vector& img,
 
     kd_node<contour_coord> kd_contour(contour.data(), contour.size());
 
-    array_2d<std::uint8_t> sdf(width / sampleScale, height / sampleScale);
+    array_2d<std::uint8_t> sdf(height / sampleScale, width / sampleScale);
 	    
     const std::uint32_t sdfW = sdf.width;
     const std::uint32_t sdfH = sdf.height;
 	    
-    std::int64_t sqMaxDist = (std::int64_t)std::pow(sdfW, 2) + (std::int64_t)std::pow(sdfH, 2);
+    std::int64_t sqMaxDist = (std::int64_t)std::pow(width, 2) + (std::int64_t)std::pow(height, 2);
 
     interval_mapper<std::int64_t, std::uint8_t> mapper(-sqMaxDist, sqMaxDist, 0, 255);
 	    
@@ -26,6 +26,7 @@ array_2d<std::uint8_t> gb::image::signed_distance_field(const bit_vector& img,
 	    
     for(std::uint32_t jImg = 0; jSdf < sdfH; jImg += sampleScale)
     {
+	iSdf = 0;
 	for(std::uint32_t iImg = 0; iSdf < sdfW; iImg += sampleScale)
 	{
 	    //1. get nn dist

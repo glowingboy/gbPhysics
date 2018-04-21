@@ -158,7 +158,8 @@ struct kd_node : public binary_tree_node
 
 	    static auto _otherSideCheck = [&]()->bool
 		{
-		    const key_t sqDistCheck = (key_t)std::pow(spKey - curNodeKey, 2);
+		    const key_t dist = spKey - curNodeKey;
+		    const key_t sqDistCheck = dist * dist;
 		    return sqDistCheck <= bestSqDist;
 		};
 
