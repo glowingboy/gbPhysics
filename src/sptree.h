@@ -51,6 +51,7 @@ template<typename Key, std::uint8_t k_>
 struct kd_key
 {
     static_assert(k_ != 0, "k_ can't be 0");
+    static_assert(std::is_signed<Key>::value, "kd_key, Key must be a signed type");
     typedef Key key_t;
     struct compare
     {

@@ -96,6 +96,7 @@ namespace gb
 	template<typename T, std::uint8_t dimension>
 	T square_distance(const T* a , const T* b)
 	{
+	    static_assert(std::is_signed<T>::value, "math::square_distance(const T* a , const T* b), T must be a signed type");
 	    T ret;
 	    memset(&ret, 0, sizeof(T));
 
@@ -111,6 +112,7 @@ namespace gb
 	template<typename A, typename B>
 	class interval_mapper
 	{
+	    static_assert(std::is_signed<A>::value && std::is_signed<B>::value, "math::interval_mapper, both A and B must be a signed type");
 	public:
 	    interval_mapper() = delete;
 	    interval_mapper(const A interval_a_l, const A interval_a_r, const B interval_b_l, const B interval_b_r):
