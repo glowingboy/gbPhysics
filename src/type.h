@@ -303,6 +303,7 @@ struct is_scalar<Float> : public std::true_type {};
 template<typename T>
 struct vec2
 {
+    static_assert(std::is_signed<T>::value, "vec2<T>, T must be a signed type");
     union
     {
 	struct { T x, y; };
@@ -314,19 +315,16 @@ struct vec2
 	x(x_),
 	y(y_)
 	{}
-    std::uint8_t length()const
-	{
-	    return 2;
-	}
+    
     T& operator[](std::uint8_t idx)
 	{
-	    assert(idx < this->length());
+	    assert(idx < 2);
 	    return ((&(this->x))[idx]);
 	}
 
     const T& operator[](std::uint8_t idx)const
 	{
-	    assert(idx < this->length());
+	    assert(idx < 2);
 	    return ((&(this->x))[idx]);
 	}
     bool operator<(const vec2& o)
@@ -401,6 +399,7 @@ typedef vec2<Float> vec2F;
 template<typename T>
 struct vec3
 {
+    static_assert(std::is_signed<T>::value, "vec3<T>, T must be a signed type");
     union
     {
 	struct { T x, y, z; };
@@ -434,10 +433,6 @@ struct vec3
 	    std::memcpy(this, v.data(), 3 * sizeof(T));
 	}
     
-    std::uint8_t length()const
-	{
-	    return 3;
-	}
     T sqDistance(const vec3 & o) const
 	{
 	    return std::pow(x - o.x, 2) + std::pow(y - o.y, 2) + std::pow(z - z.z, 2);
@@ -446,15 +441,29 @@ struct vec3
 	{
 	    return std::sqrt(std::pow(x - o.x, 2) + std::pow(y - o.y, 2) + std::pow(z - z.z, 2));
 	}
+    T sqMagnitude() const
+	{
+	    return x * x + y * y + z * z;
+	}
+    T magnitude() const
+	{
+	    return std::sqrt(sqMagnitude());
+	}
+
+    vec3 normalize() const
+	{
+	    const T mag = magnitude();
+	    return vec3(x / mag, y / mag, z / mag);
+	}
     T& operator[](std::uint8_t idx)
 	{
-	    assert(idx < this->length());
+	    assert(idx < 3);
 	    return ((&(this->x))[idx]);
 	}
 
     const T& operator[](std::uint8_t idx)const
 	{
-	    assert(idx < this->length());
+	    assert(idx < 3);
 	    return ((&(this->x))[idx]);
 	}
     vec3 operator+(const vec3& o) const
@@ -562,6 +571,7 @@ T dot(const vec3<T>& l, const vec3<T>& r)
 template <typename T>
 struct vec4
 {
+    static_assert(std::is_signed<T>::value, "vec4<T>, T must be a signed type");
     union
     {
 	struct { T x, y, z, w; };
@@ -633,6 +643,29 @@ std::int8_t sign(const T val)
 	return 1;
 }
 
+// some fancy types
+template < typename T>
+struct ray
+{
+    ray(){}
+    
+    ray(const vec3<T>& origin_point):
+	origin(origin_point)
+	{}
+    
+    ray(const vec3<T>& origin_point, const vec3<T>& other_point):
+	origin(origin_point),
+	direction(other_point - origin_point)
+	{
+	}
+
+    void update(const vec3<T>& other_point)
+	{
+	    direction = other_point - origin;
+	}
+    vec3<T> origin;
+    vec3<T> direction;
+};
 GB_PHYSICS_NS_END
 
 // std::numeric_limits extension
