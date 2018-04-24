@@ -157,7 +157,7 @@ struct kd_node : public binary_tree_node
 	    const key_t spKey = srchpnt.key[d];
 	    const key_t curNodeKey = node->data.key[d];
 
-	    auto _otherSideCheck = [spKey, curNodeKey, bestSqDist]()->bool
+	    auto _otherSideCheck = [spKey, curNodeKey, bestSqDist]()->bool // removed static for multi-threads issue
 		{
 		    const key_t dist = spKey - curNodeKey;
 		    const key_t sqDistCheck = dist * dist;

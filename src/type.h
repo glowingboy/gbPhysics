@@ -215,7 +215,7 @@ public:
 	col(col_),
 	_data(new T[row_ * col_])
 	{
-	    std::memset(_data, initValue)
+	    std::memset(_data, initValue, row_ * col_);
 	}
 
     array_2d(array_2d&& other) :
