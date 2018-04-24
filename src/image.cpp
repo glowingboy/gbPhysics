@@ -3,9 +3,9 @@
 using namespace gb::image;
 
 array_2d<std::uint8_t> gb::image::signed_distance_field(const bit_vector& img,
-					     const std::uint32_t width,
-					     const std::uint32_t height,
-					     const std::uint32_t sampleScale)
+							const std::uint32_t width,
+							const std::uint32_t height,
+							const std::uint32_t sampleScale)
 {
     typedef kd_key<std::int64_t, 2> contour_coord;
 

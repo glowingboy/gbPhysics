@@ -203,18 +203,20 @@ public:
 	col(0),
 	_data(nullptr)
 	{}
-    array_2d(const std::uint32_t row_, const std::uint32_t col_) :
+    array_2d(const std::uint32_t row_, const std::uint32_t col_):
 	row(row_),
 	col(col_),
-	_data(new T[row_ * col_]{ 0 })
-	{}
+	_data(new T[row_ * col_]{})
+	{
+	}
 
-    template<typename ... Args>
-    array_2d(const std::uint32_t row_, const std::uint32_t col_, Args ... args) :
+    array_2d(const std::uint32_t row_, const std::uint32_t col_, const std::uint8_t initValue) :
 	row(row_),
 	col(col_),
-	_data(new T[row_ * col_]{ args ... })
-	{}
+	_data(new T[row_ * col_])
+	{
+	    std::memset(_data, initValue)
+	}
 
     array_2d(array_2d&& other) :
 	row(other.row),
@@ -243,7 +245,7 @@ public:
 	    std::uint32_t old_col = col;
 	    row = row_;
 	    col = col_;
-	    T* tmp = new T[row * col]{ 0 };
+	    T* tmp = new T[row * col]{};
 	    if (_data != nullptr)
 	    {
 		if (old_row > row)

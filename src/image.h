@@ -57,12 +57,12 @@ namespace gb
 	  using a binary tree to denote this procedure will like bellow.
 	 
        	  +-----------------W--------------------+
-	  +-+-----------------+--------------------+
-	  | |	     	    |	             	 |
-	  h |A  occupied	    |empty           	 |
-	  | |                 |                    |
-	  +-+-----------------+--------------------+
-	  +--------w--------+                    |
+	  +-+-----------------+------------------+
+	  | |	     	      |	             	 |
+	  h |A  occupied      |	    |empty       |
+	  | |                 |                  |
+	  +-+-----------------+------------------+
+	  +--------w----------+                  |
        	  |empty                             	 |
 	  |			             	 |
 	  |			             	 |
@@ -301,7 +301,7 @@ namespace gb
 	};
 
 	template<typename Sprite, typename Pixel>
-	array_2d<Pixel> packing(std::vector<Sprite>& sprites, const std::uint32_t fixedWidth = 0)
+	array_2d<Pixel> packing(std::vector<Sprite>& sprites, const Pixel padding = 0, const std::uint32_t fixedWidth = 0)
 	{
 	    //pre. sort sprites by height?
 	    auto height_compare = [](const Sprite& l, const Sprite& r)
@@ -355,7 +355,7 @@ namespace gb
 
 	    std::uint32_t height = ((binary_bin_packing_node<std::uint32_t, array_2d<Sprite>>*)(root.r))->bin_height();
 
-	    array_2d<Pixel> bin(height, width);
+	    array_2d<Pixel> bin(height, width, padding);
 	    
 	    //2.fill up bin
 	    for(std::size_t i = 0; i < sprites.size(); i++)

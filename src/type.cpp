@@ -23,7 +23,7 @@ void bit_vector::reserve(const size_t capacity)
     
     const size_t byteSize = capacity / 8 + (capacity % 8 == 0 ? 0 : 1);
     _capacity = byteSize * 8;
-    std::uint8_t* newData = new std::uint8_t[byteSize]{0};
+    std::uint8_t* newData = new std::uint8_t[byteSize]{};
     
     const size_t cpSize = _curSize <= capacity ? _curSize : capacity;
     _curSize = cpSize;
