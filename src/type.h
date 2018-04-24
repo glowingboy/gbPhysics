@@ -12,6 +12,8 @@
 #include <vector>
 #include <type_traits>
 #include <cstring>
+
+
 GB_PHYSICS_NS_BEGIN
 
 //**************** fundamental type ****************
@@ -98,7 +100,38 @@ template <typename T>
 class is_Float : public std::false_type{} ;
 
 template<> class is_Float<Float> : public std::true_type {};
+
+GB_PHYSICS_NS_END
 //**************** end of fundamental type ****************
+
+namespace std
+{
+    template <> class is_signed<gb::physics::Float> : public std::true_type {};    
+}
+
+// std::numeric_limits extension
+namespace std
+{
+    template <>
+    class numeric_limits<gb::physics::Float>
+    {
+    public:
+#ifdef _MSC_VER
+#undef min
+#undef max
+#endif
+	inline static constexpr gb::physics::Float min() noexcept
+	    {
+		return gb::physics::Float(std::numeric_limits<float>::min());
+	    }
+	inline static constexpr gb::physics::Float max() noexcept
+	    {
+		return gb::physics::Float(std::numeric_limits<float>::max());
+	    }
+    };
+}
+
+GB_PHYSICS_NS_BEGIN
 
 class bit_vector
 {
@@ -667,25 +700,3 @@ struct ray
     vec3<T> direction;
 };
 GB_PHYSICS_NS_END
-
-// std::numeric_limits extension
-namespace std
-{
-    template <>
-    class numeric_limits<gb::physics::Float>
-    {
-    public:
-#ifdef _MSC_VER
-#undef min
-#undef max
-#endif
-	inline static constexpr gb::physics::Float min() noexcept
-	    {
-		return gb::physics::Float(std::numeric_limits<float>::min());
-	    }
-	inline static constexpr gb::physics::Float max() noexcept
-	    {
-		return gb::physics::Float(std::numeric_limits<float>::max());
-	    }
-    };
-}
