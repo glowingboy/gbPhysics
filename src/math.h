@@ -122,13 +122,20 @@ namespace gb
 		    assert((interval_a_r - interval_a_l) != 0);
 		    _scale = (double)(interval_b_r - interval_b_l) / ( interval_a_r - interval_a_l);
 		}
+	    void reset(const A interval_a_l, const A interval_a_r, const B interval_b_l, const B interval_b_r)
+	    {
+		_interval_a_l = interval_a_l;
+		_interval_b_l = interval_b_l;
+		assert((interval_a_r - interval_a_l) != 0);
+		_scale = (double)(interval_b_r - interval_b_l) / ( interval_a_r - interval_a_l);
+	    }
 	    B map(const A value)
 		{
 		    return _interval_b_l + (B)((value - _interval_a_l) * _scale);
 		}
 	private:
-	    const A _interval_a_l;
-	    const B _interval_b_l;
+	    A _interval_a_l;
+	    B _interval_b_l;
 	    double _scale;
 	};
 
