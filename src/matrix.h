@@ -53,7 +53,7 @@ struct mat2
     }
 
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, mat2>::type operator * (const S scalar)
+    typename std::enable_if<std::is_scalar<S>::value, mat2>::type operator * (const S scalar)
     {
 	mat2 ret = *this;
 
@@ -63,7 +63,7 @@ struct mat2
     }
 
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, mat2&>::type operator *= ( const S scalar)
+    typename std::enable_if<std::is_scalar<S>::value, mat2&>::type operator *= ( const S scalar)
     {
 	value[0] *= scalar;
 	value[1] *= scalar;
@@ -105,7 +105,7 @@ struct mat3
 	}
 
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, mat3&>::type operator *= (const S scalar )
+    typename std::enable_if<std::is_scalar<S>::value, mat3&>::type operator *= (const S scalar )
     {
 	value[0] *= scalar;
 	value[1] *= scalar;
@@ -115,14 +115,14 @@ struct mat3
     }
 
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, mat3>::type operator * (const S scalar)
+    typename std::enable_if<std::is_scalar<S>::value, mat3>::type operator * (const S scalar)
 	{
 	    mat3 ret = *this;
 	    ret *= scalar;
 	    return ret;
 	}
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, mat3&>::type operator /= (const S scalar)
+    typename std::enable_if<std::is_scalar<S>::value, mat3&>::type operator /= (const S scalar)
 	{
 	    value[0] /= scalar;
 	    value[1] /= scalar;
@@ -131,7 +131,7 @@ struct mat3
 	    return *this;
 	}
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, mat3>::type operator / (const S scalar)
+    typename std::enable_if<std::is_scalar<S>::value, mat3>::type operator / (const S scalar)
 	{
 	    mat3 ret = *this;
 	    ret /= scalar;
@@ -450,13 +450,212 @@ struct mat4
     
     mat4 operator * (const mat4 & o) const
     {
-	const mat4& self = *this;
-
-	return mat4{{self * o[0], self * o[1] , self * o[2], self * o[3]}};
+	return mat4{{*this * o[0], *this * o[1] , *this * o[2], *this * o[3]}};
+    }
+    template < typename S>
+    typename std::enable_if<std::is_scalar<S>::value, mat4>::type operator * (const S scalar) const
+    {
+	return mat4{{value[0] * scalar}, {value[1] * scalar}, {value[2] * scalar}, {value[3] * scalar}};
     }
     void operator *= (const mat4 & o)
     {
 	*this = (*this) * o;
+    }
+    template <typename S>
+    typename std::enable_if<std::is_scalar<S>::value, void>::type operator *= (const S scalar)
+    {
+	value[0] *= scalar;
+	value[1] *= scalar;
+	value[2] *= scalar;
+	value[3] *= scalar;
+    }
+
+    mat4 transpose() const
+    {
+	return mat4{{{value[0][0], value[1][0], value[2][0], value[3][0]},
+		    {value[0][1], value[1][1], value[2][1], value[3][1]},
+			{value[0][2], value[1][2], value[2][2], value[3][2]},
+			    {value[0][3], value[1][3], value[2][3], value[3][3]}}};
+    }
+    T determinant() const
+    {
+	T ret = 0;
+	// 1st using cofactors
+	/*
+	  {+, -, +, -}
+	  {-, +, -, +}
+	  {+, -, +, -}
+	  {-, +, -, +}
+	 */
+	const col_type & col0 = value[0];
+	// 2nd, using big formular for each cofactors (each will have n! terms)
+	if(col0[0] != 0)		    // n! = 3! = 6
+	    ret += +(+ value[1][1] * value[2][2] * value[3][3]
+		     - value[1][1] * value[2][3] * value[3][2]
+		     - value[1][2] * value[2][1] * value[3][3]
+		     + value[1][2] * value[2][3] * value[3][1]
+		     + value[1][3] * value[2][1] * value[3][2]
+		     - value[1][3] * value[2][2] * value[3][1]) * col0[0];
+
+	if(col0[1] != 0)
+	    ret += -(+ value[1][0] * value[2][2] * value[3][3]
+		     - value[1][0] * value[2][3] * value[3][2]
+		     - value[1][2] * value[2][0] * value[3][3]
+		     + value[1][2] * value[2][3] * value[3][0]
+		     + value[1][3] * value[2][0] * value[3][2]
+		     - value[1][3] * value[2][2] * value[3][0]) * col0[1];
+
+	if(col0[2] != 0)
+	    ret += +(+ value[1][0] * value[2][1] * value[3][3]
+		     - value[1][0] * value[2][3] * value[3][1]
+		     - value[1][1] * value[2][0] * value[3][3]
+		     + value[1][1] * value[2][3] * value[3][0]
+		     + value[1][3] * value[2][0] * value[3][1]
+		     - value[1][3] * value[2][1] * value[3][0]) * col0[2];
+
+	if(col0[3] != 0)
+	    ret += -(+ value[1][0] * value[2][1] * value[3][2]
+		     - value[1][0] * value[2][2] * value[3][1]
+		     - value[1][1] * value[2][0] * value[3][2]
+		     + value[1][1] * value[2][2] * value[3][0]
+		     + value[1][2] * value[2][0] * value[3][1]
+		     - value[1][2] * value[2][1] * value[3][0]) * col0[3];
+
+	return ret;
+    }
+    
+    bool inverse(mat4& out) const
+    {
+	// A^-1 = (1/detA)(C^T);
+	col_type & out_col0 = out[0];
+	out_col0[0] = +(+ value[1][1] * value[2][2] * value[3][3]
+			- value[1][1] * value[2][3] * value[3][2]
+			- value[1][2] * value[2][1] * value[3][3]
+			+ value[1][2] * value[2][3] * value[3][1]
+			+ value[1][3] * value[2][1] * value[3][2]
+			- value[1][3] * value[2][2] * value[3][1]);
+
+	out_col0[1] = -(+ value[1][0] * value[2][2] * value[3][3]
+			- value[1][0] * value[2][3] * value[3][2]
+			- value[1][2] * value[2][0] * value[3][3]
+			+ value[1][2] * value[2][3] * value[3][0]
+			+ value[1][3] * value[2][0] * value[3][2]
+			- value[1][3] * value[2][2] * value[3][0]);
+
+	out_col0[2] = +(+ value[1][0] * value[2][1] * value[3][3]
+			- value[1][0] * value[2][3] * value[3][1]
+			- value[1][1] * value[2][0] * value[3][3]
+			+ value[1][1] * value[2][3] * value[3][0]
+			+ value[1][3] * value[2][0] * value[3][1]
+			- value[1][3] * value[2][1] * value[3][0]);
+
+	out_col0[3] = -(+ value[1][0] * value[2][1] * value[3][2]
+			- value[1][0] * value[2][2] * value[3][1]
+			- value[1][1] * value[2][0] * value[3][2]
+			+ value[1][1] * value[2][2] * value[3][0]
+			+ value[1][2] * value[2][0] * value[3][1]
+			- value[1][2] * value[2][1] * value[3][0]);
+
+	const col_type & col0 = value[0];
+	const T determinant = out_col0[0] * col0[0] + out_col0[1] * col0[1] + out_col0[2] * col0[2] + out_col0[3] * col0[3];
+	if(determinant != 0)
+	    {
+		const T oneOverDeterminant = ((T)1) / determinant;
+		
+		col_type & out_col1 = out[1];
+		out_col1[0] = -(+ value[0][1] * value[2][2] * value[3][3]
+				- value[0][1] * value[2][3] * value[3][2]
+				- value[0][2] * value[2][1] * value[3][3]
+				+ value[0][2] * value[2][3] * value[3][1]
+				+ value[0][3] * value[2][1] * value[3][2]
+				- value[0][3] * value[2][2] * value[3][1]);
+
+		out_col1[1] = +(+ value[0][0] * value[2][2] * value[3][3]
+				- value[0][0] * value[2][3] * value[3][2]
+				- value[0][2] * value[2][0] * value[3][3]
+				+ value[0][2] * value[2][3] * value[3][0]
+				+ value[0][3] * value[2][0] * value[3][2]
+				- value[0][3] * value[2][2] * value[3][0]);
+
+		out_col1[2] = -(+ value[0][0] * value[2][1] * value[3][3]
+				- value[0][0] * value[2][3] * value[3][1]
+				- value[0][1] * value[2][0] * value[3][3]
+				+ value[0][1] * value[2][3] * value[3][0]
+				+ value[0][3] * value[2][0] * value[3][1]
+				- value[0][3] * value[2][1] * value[3][0]);
+
+		out_col1[3] = +(+ value[0][0] * value[2][1] * value[3][2]
+				- value[0][0] * value[2][2] * value[3][1]
+				- value[0][1] * value[2][0] * value[3][2]
+				+ value[0][1] * value[2][2] * value[3][0]
+				+ value[0][2] * value[2][0] * value[3][1]
+				- value[0][2] * value[2][1] * value[3][0]);
+
+		col_type & out_col2 = out[2];
+		out_col2[0] = +(+ value[0][1] * value[1][2] * value[3][3]
+				- value[0][1] * value[1][3] * value[3][2]
+				- value[0][2] * value[1][1] * value[3][3]
+				+ value[0][2] * value[1][3] * value[3][1]
+				+ value[0][3] * value[1][1] * value[3][2]
+				- value[0][3] * value[1][2] * value[3][1]);
+
+		out_col2[1] = -(+ value[0][0] * value[1][2] * value[3][3]
+				- value[0][0] * value[1][3] * value[3][2]
+				- value[0][2] * value[1][0] * value[3][3]
+				+ value[0][2] * value[1][3] * value[3][0]
+				+ value[0][3] * value[1][0] * value[3][2]
+				- value[0][3] * value[1][2] * value[3][0]);
+
+		out_col2[2] = +(+ value[0][0] * value[1][1] * value[3][3]
+				- value[0][0] * value[1][3] * value[3][1]
+				- value[0][1] * value[1][0] * value[3][3]
+				+ value[0][1] * value[1][3] * value[3][0]
+				+ value[0][3] * value[1][0] * value[3][1]
+				- value[0][3] * value[1][1] * value[3][0]);
+
+		out_col2[3] = -(+ value[0][0] * value[1][1] * value[3][2]
+				- value[0][0] * value[1][2] * value[3][1]
+				- value[0][1] * value[1][0] * value[3][2]
+				+ value[0][1] * value[1][2] * value[3][0]
+				+ value[0][2] * value[1][0] * value[3][1]
+				- value[0][2] * value[1][1] * value[3][0]);
+
+		col_type & out_col3 = out[3];
+		out_col3[0] = -(+ value[0][1] * value[1][2] * value[2][3]
+				- value[0][1] * value[1][3] * value[2][2]
+				- value[0][2] * value[1][1] * value[2][3]
+				+ value[0][2] * value[1][3] * value[2][1]
+				+ value[0][3] * value[1][1] * value[2][2]
+				- value[0][3] * value[1][2] * value[2][1]);
+
+		out_col3[1] = +(+ value[0][0] * value[1][2] * value[2][3]
+				- value[0][0] * value[1][3] * value[2][2]
+				- value[0][2] * value[1][0] * value[2][3]
+				+ value[0][2] * value[1][3] * value[2][0]
+				+ value[0][3] * value[1][0] * value[2][2]
+				- value[0][3] * value[1][2] * value[2][0]);
+
+		out_col3[2] = -(+ value[0][0] * value[1][1] * value[2][3]
+				- value[0][0] * value[1][3] * value[2][1]
+				- value[0][1] * value[1][0] * value[2][3]
+				+ value[0][1] * value[1][3] * value[2][0]
+				+ value[0][3] * value[1][0] * value[2][1]
+				- value[0][3] * value[1][1] * value[2][0]);
+
+		out_col3[3] = +(+ value[0][0] * value[1][1] * value[2][2]
+				- value[0][0] * value[1][2] * value[2][1]
+				- value[0][1] * value[1][0] * value[2][2]
+				+ value[0][1] * value[1][2] * value[2][0]
+				+ value[0][2] * value[1][0] * value[2][1]
+				- value[0][2] * value[1][1] * value[2][0]);
+
+		out *= oneOverDeterminant;
+
+		out = out.transpose();
+		return true;
+	    }
+	else
+	    return false;
     }
 };
 

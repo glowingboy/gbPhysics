@@ -106,7 +106,8 @@ GB_PHYSICS_NS_END
 
 namespace std
 {
-    template <> class is_signed<gb::physics::Float> : public std::true_type {};    
+    template <> class is_signed<gb::physics::Float> : public std::true_type {};
+    template <> class is_scalar<gb::physics::Float> : public std::true_type {};
 }
 
 // std::numeric_limits extension
@@ -314,28 +315,6 @@ private:
 };
 
 template<typename T>
-struct is_scalar : public std::false_type {};
-
-template<>
-struct is_scalar<signed char> : public std::true_type {};
-
-template<>
-struct is_scalar<unsigned char> : public std::true_type {};
-
-template<>
-struct is_scalar<int> : public std::true_type {};
-
-template <>
-struct is_scalar<unsigned int> : public std::true_type {};
-
-template <>
-struct is_scalar<float> : public std::true_type {};
-    
-template<>
-struct is_scalar<Float> : public std::true_type {};
-
-
-template<typename T>
 struct vec2
 {
     static_assert(std::is_signed<T>::value, "vec2<T>, T must be a signed type");
@@ -402,13 +381,13 @@ struct vec2
 	}
 
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, vec2>::type operator /(const S scalar) const
+    typename std::enable_if<std::is_scalar<S>::value, vec2>::type operator /(const S scalar) const
 	{
 	    return vec2(x / scalar, y / scalar);
 	}
     
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, vec2&>::type operator /=(const S scalar)
+    typename std::enable_if<std::is_scalar<S>::value, vec2&>::type operator /=(const S scalar)
 	{
 	    x /= scalar;
 	    y /= scalar;
@@ -524,12 +503,12 @@ struct vec3
 	    z -= o.z;
 	}
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, vec3>::type operator*(const S scalar) const
+    typename std::enable_if<std::is_scalar<S>::value, vec3>::type operator*(const S scalar) const
 	{
 	    return vec3(x * scalar, y * scalar, z * scalar);
 	}
     template <typename S>
-    typename std::enable_if<is_scalar<S>::value, vec3&>::type operator *=(const S scalar)
+    typename std::enable_if<std::is_scalar<S>::value, vec3&>::type operator *=(const S scalar)
 	{
 	    x *= scalar;
 	    y *= scalar;
@@ -538,13 +517,13 @@ struct vec3
 	    return *this;
 	}
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, vec3>::type operator/(const S scalar) const
+    typename std::enable_if<std::is_scalar<S>::value, vec3>::type operator/(const S scalar) const
 	{
 	    return vec3(x / scalar, y / scalar, z / scalar);
 	}
 
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, vec3&>::type operator/=(const S scalar)
+    typename std::enable_if<std::is_scalar<S>::value, vec3&>::type operator/=(const S scalar)
 	{
 	    x /= scalar;
 	    y /= scalar;
@@ -661,9 +640,18 @@ struct vec4
 	    return vec4( x + o.x, y + o.y, z + o.z, w + o.w);
 	}
     template<typename S>
-    typename std::enable_if<is_scalar<S>::value, vec4<T>>::type operator * (const S scalar) const
+    typename std::enable_if<std::is_scalar<S>::value, vec4<T>>::type operator * (const S scalar) const
 	{
 	    return vec4(x * scalar, y * scalar, z * scalar, w * scalar);
+	}
+
+    template <typename S>
+    typename std::enable_if<std::is_scalar<S>::value, void>::type operator *= (const S scalar)
+	{
+	    x *= scalar;
+	    y *= scalar;
+	    z *= scalar;
+	    w *= scalar;
 	}
 };
 
