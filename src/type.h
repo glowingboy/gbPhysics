@@ -329,6 +329,12 @@ struct vec2
 	x(x_),
 	y(y_)
 	{}
+
+    template <typename o_t>
+    vec2 (const vec2<o_t>& o):
+	x(o.x),
+	y(o.y)
+	{}
     
     T& operator[](std::uint8_t idx)
 	{
@@ -581,6 +587,18 @@ T dot(const vec3<T>& l, const vec3<T>& r)
     return l.x * r.x + l.y * r.y + l.z * r.z;
 }
 
+template <typename T>
+vec3<T> cross(const vec3<T> & a, const vec3<T> & b)
+{
+    /*
+			| i  j  k  |
+      cros(A, B) = det 	| Ax Ay Az |
+		        | Bx By Bz |
+
+     */
+    
+    return vec3<T>(a.y * b.z - a.z * b.y, a.x * b.z - a.z * b.x, a.x * b.y - a.y * b.x);
+}
 
 template <typename T>
 struct vec4
@@ -666,27 +684,4 @@ std::int8_t sign(const T val)
 	return 1;
 }
 
-// some fancy types
-template < typename T>
-struct ray
-{
-    ray(){}
-    
-    ray(const vec3<T>& origin_point):
-	origin(origin_point)
-	{}
-    
-    ray(const vec3<T>& origin_point, const vec3<T>& other_point):
-	origin(origin_point),
-	direction(other_point - origin_point)
-	{
-	}
-
-    void update(const vec3<T>& other_point)
-	{
-	    direction = other_point - origin;
-	}
-    vec3<T> origin;
-    vec3<T> direction;
-};
 GB_PHYSICS_NS_END
