@@ -536,14 +536,6 @@ struct vec3
 	    z /= scalar;
 	    return *this;
 	}
-    void identitylization()
-	{
-	    operator/=(module());
-	}
-    vec3 identity() const
-	{
-	    return operator/(module());
-	}
     bool operator<(const vec3& o) const
 	{
 	    return (x < o.x) && (y < o.y) && (z < o.z);
@@ -559,11 +551,6 @@ struct vec3
     bool operator >=(const vec3& o) const
 	{
 	    return (x >= o.x) && (y > o.y) && (z >= o.z);
-	}
-
-    T module() const
-	{
-	    return std::sqrt(x*x + y*y + z*z);
 	}
 };
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "plane.h"
+#include "boundingbox.h"
 
 GB_PHYSICS_NS_BEGIN
 
@@ -59,7 +60,38 @@ struct ray
 	    return dot(p1X, p2X) < 0 ? false : true;
 	}
 
-    bool intersect_obb()
+    bool intersect_obb(const obb<T> & dst, float (&t)[2])
+    {
+	// slab method
+	// ref https://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
+
+	/*
+	  using method to check every view of three views
+	 */
+	
+	// check other two slabs which are parallel to current slab's normal
+	const obb<T>::slab & slab0 = dst.slabs[0];
+	const obb<T>::slab & slab1 = dst.slabs[1];
+	const obb<T>::slab & slab2 = dst.slabs[2];
+	// 0
+	float t[2] = {0};
+	if(intersect_plane(plane{slab1.normal, slab1.points[0]}, t[0]))
+	    {
+		if(t[0] == 0)	// ray is in the plane
+		    return true;
+		else
+		    {
+			if(intersect_plane(plane(slab1.normal, slab1.points[1]), t[1]))
+			    {
+				assert(t[1] != 0);
+				
+			    }
+			else
+			    assert(false);
+		    }
+	    }
+
+    }
 
     bool intersect
     vec3<T> origin;

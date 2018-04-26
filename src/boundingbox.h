@@ -160,6 +160,8 @@ struct aabb
 template<typename T>
 spherebb<T> genSphereBB(const vec3<T>* data, const std::size_t count)
 {
+    assert(data != nullptr);
+    
     const mat3<T> axes = naturalAxes(data, count);
 
     const vec3<T>& primaryAxis = axes[0];
@@ -193,6 +195,74 @@ spherebb<T> genSphereBB(const vec3<T>* data, const std::size_t count)
     }
 
     return spherebb<T>(*min/2 + *max/2, projMax/2 - projMin/2);
+}
+
+template <typename T = Float>
+struct obb
+{
+    struct slab
+    {
+	vec3<T> normal;
+	vec3<T>[2] points;
+    };
+    slab slabs[3];	
+};
+
+template <typename T>
+obb<T> genOrientedBB(const vec3<T>* data, const std::size_t count)
+{
+    assert(data != nullptr);
+    
+    obb<T> ret;
+    
+    const mat3<T> axis = naturalAxes(data, count);
+
+    for(std:uint8_t i = 0; i < 3; i++)
+    {
+	ret.slabs[i].normal = axis[i].normalize();
+    }
+
+    T extend[3][2] = {{0}};
+
+    for(std::uint8_t i = 0; i < 3; i ++)
+    {
+	obb<T>::slab & curSlab = ret.slabs[i];
+	const vec3<T> & normal = curSlab.normal;
+	vec3<T> & minP = curSlab.points[0];
+	vec3<T> & maxP = curSlab.points[1];
+	T & minE = extend[i][0];
+	T & maxE = extend[i][1];
+
+	/*
+	  for each slab.normal, minP is the point which has smallest
+	  projection on the normal, and maxP has the largest.
+	      
+	  proj = P * P * N / (|P||N|)
+	  since |N| = 1, so proj = ((P^T dot P) / |P|) * N;
+	*/
+
+	minP = data[0];
+	maxP = data[0];
+	minE = dot(minP, minP) / minP.magnitude();
+	maxE = minE;
+	
+	for(std::size_t j = 1; j < count; j++)
+	{
+	    const vec3 & P = data[j];
+	    const T projScalar = dot(P, P) / P.magnitude();
+	    if(minE > projScalar)
+	    {
+		minE = projScalar;
+		minP = P;
+	    }
+
+	    if(maxE < projScalar)
+	    {
+		maxE = projScalar;
+		maxP = P;
+	    }
+	}
+    }
 }
 
 GB_PHYSICS_NS_END
