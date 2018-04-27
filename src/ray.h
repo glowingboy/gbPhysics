@@ -66,7 +66,52 @@ struct ray
 	// ref https://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
 
 	/*
-	  using method to check every view of three views
+	  1st:
+	  pick one pair slabs, find solution of intersection of ray with slabs.
+	  The solution will result in 3 cases:
+	  a. both intersected		       				       
+					    				       
+	       | 	 X		    		       |     |	          /
+	       |  	/|		    		       |     |	         /
+	       |       / |		    		       |     |	        /
+	 ------+------X--+---------	    	    -----------+-----+---------X------
+	       |     /	 |		    		       |     |	      /
+	       |    /	 |		    		       |     | 	     /
+	       |   /	 |		    		       |     |      /
+	-------+--X------+---------  	    	    -----------+-----+-----X----------
+	       | /       |		       		       |     |    /
+	       |/        |		       		       |     | 	 /
+	       X	 |		       			      	
+
+	       intersected                                    missed
+	  b. only one intersected
+
+	      |		|			  |	   |
+	------+---------+---------	     -----+--------+--------->
+	      |	        |			  |	   |
+       	------+---------+-------->	     -----+--------+----------
+       	      |	        |			  |	   |
+       	------+---------+---------	     -----+--------+----------
+	      |		|			  |	   |
+	      |		|			  |	   |
+
+	      intersected                            missed
+	  c. both missed
+
+	    |	   |				 |     | o
+	----+------+----------- 	     ----+-----+------
+	    |	   |				 |     |
+	    |  o   |				 |     |
+	----+------+-----------		     ----+-----+------
+	    |	   |				 |     |
+	    |	   |				 |     |
+
+	    intersected                            missed
+
+	  2nd:
+	  a: if Max_near > Min_far, then pick an other pair of left two, repeat 1st step,
+	  else return false.
+	  b: if 
 	 */
 	
 	// check other two slabs which are parallel to current slab's normal
@@ -84,7 +129,10 @@ struct ray
 			if(intersect_plane(plane(slab1.normal, slab1.points[1]), t[1]))
 			    {
 				assert(t[1] != 0);
-				
+				if(t[0] > t[1])
+				    {
+					std::swap(t[0], t[1]);
+				    }
 			    }
 			else
 			    assert(false);
