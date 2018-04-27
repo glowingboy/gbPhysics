@@ -1,5 +1,6 @@
 #pragma once
 #include "matrix.h"
+#include "plane.h"
 
 #include <limits>
 
@@ -204,6 +205,14 @@ struct obb
     {
 	vec3<T> normal;
 	vec3<T>[2] points;
+
+	bool is_between_slab(const vec3<T> & point) const
+	    {
+		if(!plane(normal, points[0]).is_same_side(point, points[1]))
+		    return false;
+		
+		return plane(normal, points[1]).is_same_side(point, points[0]);
+	    }
     };
     slab slabs[3];	
 };
@@ -264,5 +273,6 @@ obb<T> genOrientedBB(const vec3<T>* data, const std::size_t count)
 	}
     }
 }
+
 
 GB_PHYSICS_NS_END

@@ -52,10 +52,10 @@ struct ray
 	    }
 	}
 
-    bool is_same_side(const vec3<T>& p1, const vec3<T>& p2)
+    bool is_same_side(const vec2<T>& p1, const vec2<T>& p2)
 	{
-	    const vec3<T> p1X = cross(direction, p1 - origin);
-	    const vec3<T> p2X = cross(direction, p2 - origin);
+	    const vec2<T> p1X = cross(direction, p1 - origin);
+	    const vec2<T> p2X = cross(direction, p2 - origin);
 
 	    return dot(p1X, p2X) < 0 ? false : true;
 	}
@@ -69,8 +69,8 @@ struct ray
 	  1st:
 	  pick one pair slabs, find solution of intersection of ray with slabs.
 	  The solution will result in 3 cases:
-	  a. both intersected		       				       
-					    				       
+	  a. both intersected
+
 	       | 	 X		    		       |     |	          /
 	       |  	/|		    		       |     |	         /
 	       |       / |		    		       |     |	        /
@@ -83,19 +83,21 @@ struct ray
 	       |/        |		       		       |     | 	 /
 	       X	 |		       			      	
 
-	       intersected                                    missed
-	  b. only one intersected
+	       intersected, repeat 1st                           missed, return false
+
+	  b. only one intersected(including ray is in some one plane of slabs)
 
 	      |		|			  |	   |
-	------+---------+---------	     -----+--------+--------->
+	------+--A------+---------	     -----+--------+--------->
 	      |	        |			  |	   |
        	------+---------+-------->	     -----+--------+----------
        	      |	        |			  |	   |
-       	------+---------+---------	     -----+--------+----------
+       	------+-----B---+---------	     -----+--------+----------
 	      |		|			  |	   |
 	      |		|			  |	   |
 
-	      intersected                            missed
+	      intersected continue                 missed, return false
+
 	  c. both missed
 
 	    |	   |				 |     | o
@@ -106,39 +108,130 @@ struct ray
 	    |	   |				 |     |
 	    |	   |				 |     |
 
-	    intersected                            missed
+	    intersected, return true              missed, return false
 
 	  2nd:
 	  a: if Max_near > Min_far, then pick an other pair of left two, repeat 1st step,
 	  else return false.
-	  b: if 
+	  b: if A, B(both on the slab planes) at the same side of plane which is parallel to slab 
+	  and through origin of the ray, then check the other two of three slabs except this slab, 
+	  else return false.
+	  c: same idea as "is point in convex polygon" 
+
 	 */
+
+	static constexpr std::int8_t missed = -1;
+	static constexpr std::int8_t caseA = 2;
+	static constexpr std::Int8_t caseB = 3;
+	static constexpr std::int8_t caseC = 4;
+	const auto slabCheck = [&](const obb<T>::slab & slabA,
+				      const obb<T>::slab & slabB,
+				      float (&t)[2]) -> std::int8_t
+	    {
+
+		const auto internalCheck = [this](const obb<T>::slab s, float (&t)[2]) -> std::int8_t
+		{
+		    const bool ret0 = intersect_plane(plane{s.normal, s.points[0]}, t[0]);
+		    const bool ret1 = intersect_plane(plane{s.normal, s.points[1]}, t[1]);
+		    if(ret0)
+			{
+			    if(t[0] == 0)
+				return caseB;
+			    else if(ret1)
+				{
+				    assert(t[1] == 0);
+				    if(t[0] > t[1])
+					std::swap(t[0], t[1]);
+
+				    return caseA;
+				}
+			    else
+				{
+				    assert(false);
+				}
+			}
+		    else if(ret1)
+			{
+			    return caseB;
+			}
+		    else
+			return missed;
+		};
+		
+		float tA[2] = {0.0f};
+		const std::int8_t retA = internalCheck(slabA, tA);
+		
+		float tB[2] = {0.0f};
+		const bool retB = internalCheck(slabB, tB);
+
+		if(retA == caseA && retB == caseA)
+		    {
+			if(tA[0] > tB[0])
+			    {
+				if(tA[1] > tB[1])
+				    return missed;
+			    }
+			if(tB[0] > tA[0])
+			    {
+				if(tB[1] > tA[1])
+				    return missed;
+			    }
+			return caseA;
+		    }
+
+		if(retA == missed && retB == missed)
+		    {
+			if(slabA.is_between_slab(origin) && slabB.is_between_slab(origin))
+			    return caseC;
+			else
+			    return missed;
+		    }
+
+		if(retA == caseB)
+		    {
+			if(plane{slabB.normal, origin}.is_same_side(slabB.points[0], slabB.points[1], false))
+			    return missed;
+			else
+			    return 0; // slabA
+		    }
+		else
+		    {
+			assert(retB == caseB)
+			if(plane{slabA.normal, origin}.is_same_side(slabA.points[0], slabA.points[1], false))
+			    return missed;
+			else
+			    return 1; // slabB
+		    }
+	    };
+
 	
-	// check other two slabs which are parallel to current slab's normal
 	const obb<T>::slab & slab0 = dst.slabs[0];
 	const obb<T>::slab & slab1 = dst.slabs[1];
 	const obb<T>::slab & slab2 = dst.slabs[2];
 	// 0
-	float t[2] = {0};
-	if(intersect_plane(plane{slab1.normal, slab1.points[0]}, t[0]))
+	std::int8_t ret = slabCheck(slab1, slab2);
+	if(ret == caseA)
 	    {
-		if(t[0] == 0)	// ray is in the plane
-		    return true;
+		ret = slabCheck(slab2, slab0);
+		if(ret == missed)
+		    return false;
 		else
-		    {
-			if(intersect_plane(plane(slab1.normal, slab1.points[1]), t[1]))
-			    {
-				assert(t[1] != 0);
-				if(t[0] > t[1])
-				    {
-					std::swap(t[0], t[1]);
-				    }
-			    }
-			else
-			    assert(false);
-		    }
+		    return true;
 	    }
 
+	else if(ret == missed)
+	    return missed;
+	else if(ret == caseC)
+	    return true;
+	else
+	    {
+		assert(ret == 0 || ret == 1);
+		const std::int8_t finalRet = slabCheck(slab0, slabs[ret]);
+		if(ret != missed)
+		    return true;
+		else
+		    return false;
+	    }
     }
 
     bool intersect
