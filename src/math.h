@@ -143,5 +143,31 @@ namespace gb
 	{
 	    return GB_MATH_PI * (degree / 180.0f);
 	}
+
+	template <typename T>
+	struct quadratic_equation
+	{
+	    static_assert(std::is_signed<T>::value, "quadratic_equation T must be a signed type");
+	    T a;
+	    T b;
+	    T c;
+	    T discriminant() const
+		{
+		    return b * b - 4 * a * c;
+		}
+
+	    bool solution(T (&x) [2])
+		{
+		    const T D = discriminant();
+		    if(D < 0)
+			return false;
+		    const T sqrtD = std::sqrt(D);
+		    const T oneOverA = ((T)1) / a;
+		    x[0] = (-b + sqrtD) * oneOverA;
+		    x[1] = (-b - sqrtD) * oneOverA;
+		    
+		    return true;
+		}
+	};
     }
 }

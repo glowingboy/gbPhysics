@@ -204,7 +204,7 @@ struct obb
     struct slab
     {
 	vec3<T> normal;
-	vec3<T>[2] points;
+	vec3<T> points[2];
 
 	bool is_between_slab(const vec3<T> & point) const
 	    {

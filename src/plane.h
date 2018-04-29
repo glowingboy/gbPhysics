@@ -12,6 +12,13 @@ struct plane
 
     bool is_same_side(const vec3<T> & p1, const vec3<T> & p2, bool includeOnPlane = true) const
 	{
+	    /*
+	      p1, p2 are in the same side, 
+	      then both of their projection vectors on the normal have same direction
+	      say A's projection vector onto B is V,
+	      then V = |A| * cos<A, B> * B_I(B's normal vector) = dot(A, B) * [(1/|B|) * B/|B|],
+	      and the direction is determinated by dot(A, B)
+	     */
 	    const T ret = dot(p1 - point, normal) * dot(p2 - point, normal);
 	    if( ret > 0)
 		return true;

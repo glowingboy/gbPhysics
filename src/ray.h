@@ -60,7 +60,7 @@ struct ray
 	    return dot(p1X, p2X) < 0 ? false : true;
 	}
 
-    bool intersect_obb(const obb<T> & dst, float (&t)[2])
+    bool intersect_obb(const obb<T> & dst/*, float (&t)[2]*/)
     {
 	// slab method
 	// ref https://www.siggraph.org/education/materials/HyperGraph/raytrace/rtinter3.htm
@@ -121,96 +121,98 @@ struct ray
 	 */
 
 	static constexpr std::int8_t missed = -1;
+	// 0, 1 for caseB
 	static constexpr std::int8_t caseA = 2;
-	static constexpr std::Int8_t caseB = 3;
-	static constexpr std::int8_t caseC = 4;
+	static constexpr std::int8_t caseC = 3;
 	const auto slabCheck = [&](const obb<T>::slab & slabA,
-				      const obb<T>::slab & slabB,
-				      float (&t)[2]) -> std::int8_t
+				      const obb<T>::slab & slabB) -> std::int8_t
 	    {
 
-		const auto internalCheck = [this](const obb<T>::slab s, float (&t)[2]) -> std::int8_t
+		const auto internalCheck = [this](const obb<T>::slab s, float (&t)[2]) -> bool
 		{
 		    const bool ret0 = intersect_plane(plane{s.normal, s.points[0]}, t[0]);
 		    const bool ret1 = intersect_plane(plane{s.normal, s.points[1]}, t[1]);
-		    if(ret0)
+		    if(ret0 && ret1)
 			{
-			    if(t[0] == 0)
-				return caseB;
-			    else if(ret1)
-				{
-				    assert(t[1] == 0);
-				    if(t[0] > t[1])
-					std::swap(t[0], t[1]);
-
-				    return caseA;
-				}
-			    else
-				{
-				    assert(false);
-				}
-			}
-		    else if(ret1)
-			{
-			    return caseB;
+			    assert(t[0] == 0 || t[1] == 0);// if both of two planes are planar?
+			    if(t[0] > t[1])
+				std::swap(t[0], t[1]);
+			    return true;
 			}
 		    else
-			return missed;
+			return false;
+		    // if(ret0)
+		    // 	{
+		    // 	    if(t[0] == 0)
+		    // 		return false
+		    // 	    else if(ret1)
+		    // 		{
+		    // 		    assert(t[1] == 0);
+		    // 		    if(t[0] > t[1])
+		    // 			std::swap(t[0], t[1]);
+
+		    // 		    return true;
+		    // 		}
+		    // 	    else
+		    // 		{
+		    // 		    assert(false);
+		    // 		}
+		    // 	}
+		    // else if(ret1)
+		    // 	{
+		    // 	    return caseB;
+		    // 	}
+		    // else
+		    // 	return missed;
 		};
 		
-		float tA[2] = {0.0f};
-		const std::int8_t retA = internalCheck(slabA, tA);
+		float t0[2] = {0.0f};
+		const std::int8_t ret0 = internalCheck(slab0, t0);
 		
-		float tB[2] = {0.0f};
-		const bool retB = internalCheck(slabB, tB);
+		float t1[2] = {0.0f};
+		const bool ret1 = internalCheck(slab1, t1);
 
-		if(retA == caseA && retB == caseA)
+		if(ret0 && ret1) // case A
 		    {
-			if(tA[0] > tB[0])
+			if(t0[0] < t1[0])
 			    {
-				if(tA[1] > tB[1])
+				if(t0[1] < t1[0])
 				    return missed;
 			    }
-			if(tB[0] > tA[0])
-			    {
-				if(tB[1] > tA[1])
-				    return missed;
-			    }
+
 			return caseA;
 		    }
-
-		if(retA == missed && retB == missed)
+		else if(ret0)	// case B
 		    {
-			if(slabA.is_between_slab(origin) && slabB.is_between_slab(origin))
+			if(plane{slab1.normal, origin}.is_same_side(slab1.points[0], slab1.points[1], false))
+			    return missed;
+			else
+			    return 0;			
+		    }
+		else if(ret1)	// caseB
+		    {
+			if(plane{slab0.normal, origin}.is_same_side(slab0.points[0], slab0.points[1], false))
+			    return missed;
+			else
+			    return 0;
+		    }
+		    return 1;
+		else		// case C
+		    {
+			if(slab0.is_between_slab(origin) && slab1.is_between_slab(origin))
 			    return caseC;
 			else
 			    return missed;
 		    }
-
-		if(retA == caseB)
-		    {
-			if(plane{slabB.normal, origin}.is_same_side(slabB.points[0], slabB.points[1], false))
-			    return missed;
-			else
-			    return 0; // slabA
-		    }
-		else
-		    {
-			assert(retB == caseB)
-			if(plane{slabA.normal, origin}.is_same_side(slabA.points[0], slabA.points[1], false))
-			    return missed;
-			else
-			    return 1; // slabB
-		    }
 	    };
 
+	const obb<T>::slab (&slabs) [3] = dst.slabs;
 	
-	const obb<T>::slab & slab0 = dst.slabs[0];
-	const obb<T>::slab & slab1 = dst.slabs[1];
-	const obb<T>::slab & slab2 = dst.slabs[2];
-	// 0
-	std::int8_t ret = slabCheck(slab1, slab2);
-	if(ret == caseA)
+	// round 0
+	std::int8_t ret = slabCheck(slabs[0], slabs[1]);
+	if(ret == missed)
+	    return false;
+	else if(ret == caseA)
 	    {
 		ret = slabCheck(slab2, slab0);
 		if(ret == missed)
@@ -218,20 +220,49 @@ struct ray
 		else
 		    return true;
 	    }
-
-	else if(ret == missed)
-	    return missed;
+	else if(ret == 0)
+	    {
+		ret = slabCheck(slabs[1], slabs[2]);
+		if(ret == missed)
+		    return false;
+		else
+		    return true;
+	    }
+	else if(ret == 1)
+	    {
+		ret = slabCheck(slabs[0], slabs[2]);
+		if(ret == missed)
+		    return false;
+		else
+		    return true;
+	    }
 	else if(ret == caseC)
 	    return true;
+    }
+
+    bool intersect_sphere(const spherebb<T>& sbb, float (&t)[2])
+    {
+	/* 
+	   suppose ray: O + tD, 
+	   spherebb: (P - C)^2 = R^2, (P is a point on the sphere, C is centre of sphere, and R is radius)
+	   plugging ray equation into spherebb
+	   (O + tD - C)^2 - R^2 = 0
+	   D^2 * t^2 + 2(O-C)D * t + (O-C)^2 - R^2 = 0
+
+	   if t has 0 solution, then no intersection
+	   if t has 1 solution, then 1 intersection, which means ray is tangent to the sphere
+	   if t has 2 solution, then 2 intersection
+	*/
+	vec3<T> OminusC = origin - sbb.centre;
+	
+	gb::math::quadratic_equation qe{dot(direction, direction),
+		2 * dot(OminusC, direction),
+		dot(OminusC, OminusC) - dot(sbb.radius, sbb.radius)};
+
+	if(qe.discriminant() < 0)
+	    return false;
 	else
-	    {
-		assert(ret == 0 || ret == 1);
-		const std::int8_t finalRet = slabCheck(slab0, slabs[ret]);
-		if(ret != missed)
-		    return true;
-		else
-		    return false;
-	    }
+	    return true;
     }
 
     bool intersect
