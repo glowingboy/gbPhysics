@@ -18,6 +18,7 @@ gb_add_class(boundingbox src srcs)
 gb_add_class(sptree src srcs)
 gb_add_class(camera src srcs)
 gb_add_class(ray src srcs)
+gb_add_class(plane src srcs)
 
 add_library(gbPhysics STATIC
   ${srcs}

@@ -501,7 +501,7 @@ constexpr _ArbitraryPointGetter octree<_Ele, _Contain, _ArbitraryPointGetter, _B
 template <typename _Ele, typename _Contain, typename _ArbitraryPointGetter, typename _BB_Unit>
 #ifdef _MSC_VER
 #undef min
-const vec3<_BB_Unit> octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_minOctanLenSide{std::numeric_limits<_BB_Unit>::min() * 2};
+const vec3<_BB_Unit> octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_minOctanLenSide = {std::numeric_limits<_BB_Unit>::min() * 2};
 #else
 constexpr vec3<_BB_Unit> octree<_Ele, _Contain, _ArbitraryPointGetter, _BB_Unit>::_minOctanLenSide;
 #endif

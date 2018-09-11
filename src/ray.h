@@ -265,7 +265,7 @@ struct ray
 	    return true;
     }
 
-    bool intersect
+    bool intersect;
     vec3<T> origin;
     vec3<T> direction;
 };

@@ -30,7 +30,7 @@ union Float
 	std::uint32_t sign : 1;
     }parts;
 #endif
-    template <typename T>
+    template <typename T, typename = std::enable_if<std::is_scalar<T>::value>::type>
     constexpr Float(const T f_) noexcept : f((float)f_){}
     
     Float():f(.0f) {}
@@ -400,15 +400,7 @@ struct vec2
 
 	    return *this;
 	}
-    void identitylization()
-	{
-	    operator/=(module());
-	}
-    vec2 identity() const
-	{
-	    return operator/(module());
-	}
-    T module() const
+    T magnitude() const
 	{
 	    return std::sqrt(x * x + y * y);
 	}
@@ -604,6 +596,12 @@ struct vec4
     vec4(const vec3<T>& o):
 	x(o.x), y(o.y), z(o.z), w(1)
 	{}
+    vec4(const T val):
+	x(val),
+	y(val),
+	z(val),
+	w(val)
+	{}
     
     vec4(const typename std::conditional<is_Float<T>::value, std::vector<float>, std::vector<T>>::type& v):
 	x(v[0]),
@@ -657,6 +655,12 @@ struct vec4
 	    y *= scalar;
 	    z *= scalar;
 	    w *= scalar;
+	}
+
+    template <typename S>
+    typename std::enable_if<std::is_scalar<S>::value, vec4<T>>::type operator / (const S scalar) const
+	{
+	    return vec4(x / scalar, y / scalar, z / scalar, w / scalar);
 	}
 };
 

@@ -296,8 +296,8 @@ struct mat3
 		    if(col1[1] != 0 || col1[2] != 0)
 			{
 			    const vec3<T> e1{1, 0, 0};
-			    vec3<T> V = col1 - e1 * (col1.module()) * sign(-col1[0]);
-			    V.identitylization();
+			    vec3<T> V = col1 - e1 * (col1.magnitude()) * sign(-col1[0]);
+			    V = V / V.magnitude();
 
 			    H1 = mat3<T>::make_identity() -= vec3ColMultiplyRow(V, V) *= 2;
 			}
@@ -311,8 +311,8 @@ struct mat3
 		    if(col2[1] != 0)
 			{
 			    const vec2<T> e2{1, 0};
-			    vec2<T> V = col2 - e2 * (col2.module()) * sign(-col2[0]);
-			    V.identitylization();
+			    vec2<T> V = col2 - e2 * (col2.magnitude()) * sign(-col2[0]);
+			    V = V / V.magnitude();
 
 			    mat2<T> h2 = mat2<T>::make_identity() -= vec2ColMultiplyRow(V, V) *= 2;
 
