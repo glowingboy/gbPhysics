@@ -95,7 +95,7 @@ struct aabb
 
     aabb(const vec3<T>& lower, const vec3<T>& upper):
 	diagonal{lower, upper},
-	lenSide(upper - lower)
+	lenSide((upper - lower).abs())
 	{}
 
     void set(const vec3<T>& lower, const vec3<T>& upper)
@@ -103,7 +103,7 @@ struct aabb
 	    diagonal[GB_PHYSICS_DIAGONAL_LOWER_IDX] = lower;
 	    diagonal[GB_PHYSICS_DIAGONAL_UPPER_IDX] = upper;
 
-	    lenSide = upper - lower;
+	    lenSide = (upper - lower).abs();
 	}
     
     bool intersect(const aabb & o) const

@@ -544,6 +544,11 @@ struct vec3
 	{
 	    return (x >= o.x) && (y > o.y) && (z >= o.z);
 	}
+
+    vec3 abs() const
+	{
+	    return vec3(x > 0 ? x : -x, y > 0 ? y : -y, z > 0 ? z : -z);
+	}
 };
 
 typedef vec3<Float> vec3F;
