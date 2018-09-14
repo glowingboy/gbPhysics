@@ -46,3 +46,5 @@ endforeach()
 set(headers ${headers} ${CMAKE_CURRENT_SOURCE_DIR}/src/config.h)
 
 install(FILES ${headers} DESTINATION .)
+# install Eigen lib
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/Eigen DESTINATION .)

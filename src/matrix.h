@@ -5,6 +5,8 @@
 #include <utility>
 #include <functional>
 
+#include "Eigen/Dense"
+#include "Eigen/Eigenvalues"
 /*
   COLUMN MAJOR ORDER
 
@@ -343,6 +345,20 @@ struct mat3
 		}
 	    return ret;
 	}
+
+    //Eigen adapter
+    operator Eigen::Matrix<T, 3, 3> () const
+	{
+	    Eigen::Matrix<T, 3, 3> ret;
+	    std::memcpy(ret.data(), value, 3 * 3 * sizeof(T));
+	    return ret;
+	}
+
+    mat3(const Eigen::Matrix<T, 3, 3> & em)
+	{
+	    std::memcpy(value, em.data(), 3 * 3 * sizeof(T));
+	}
+    mat3(){}
 };
 
 template <typename T>
@@ -416,10 +432,10 @@ mat3<T> naturalAxes(const vec3<T>* data, const std::size_t count)
     */
 
     // covariance matrix
-    mat3<T> covM = covarianceMat3<T>(data, count);
-
+    Eigen::Matrix<T, 3, 3> covM = covarianceMat3<T>(data, count);
+    Eigen::EigenSolver<Eigen::Matrix<T, 3, 3>> solver(covM, true);
     // eigenvector
-    return covM.eigenvectors();
+    return solver.eigenvectors().real();
 }
 
 template <typename T>
@@ -659,7 +675,7 @@ struct mat4
     }
 };
 
-typedef mat4<Float> mat4F;
+typedef mat4<float> mat4f;
 
 template <typename T>
 mat4<T> scaleMat(const vec3<T>& scale)

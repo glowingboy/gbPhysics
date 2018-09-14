@@ -6,7 +6,7 @@
 
 GB_PHYSICS_NS_BEGIN
 	
-template<typename T = Float>
+template<typename T = float>
 struct spherebb
 {
     spherebb():
@@ -85,7 +85,7 @@ struct spherebb
 #define GB_PHYSICS_DIAGONAL_LOWER_IDX 0
 #define GB_PHYSICS_DIAGONAL_UPPER_IDX 1
 	
-template<typename T = Float>
+template<typename T = float>
 struct aabb
 {
     aabb():
@@ -198,7 +198,7 @@ spherebb<T> genSphereBB(const vec3<T>* data, const std::size_t count)
     return spherebb<T>(*min/2 + *max/2, projMax/2 - projMin/2);
 }
 
-template <typename T = Float>
+template <typename T = float>
 struct obb
 {
     struct slab

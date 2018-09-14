@@ -129,6 +129,10 @@ namespace std
 	    {
 		return gb::physics::Float(std::numeric_limits<float>::max());
 	    }
+	
+	static constexpr bool is_integer = false;
+
+	static constexpr bool is_signed = true;
     };
 }
 
@@ -406,7 +410,7 @@ struct vec2
 	}
 };
 
-typedef vec2<Float> vec2F;
+typedef vec2<float> vec2f;
 
 template<typename T>
 struct vec3
@@ -551,7 +555,7 @@ struct vec3
 	}
 };
 
-typedef vec3<Float> vec3F;
+typedef vec3<float> vec3f;
 
 template<typename T>
 vec3<T> meanVec3(const vec3<T> * data, const std::size_t count)
@@ -669,7 +673,7 @@ struct vec4
 	}
 };
 
-typedef vec4<Float> vec4F;
+typedef vec4<float> vec4f;
 
 template<typename T>
 std::int8_t sign(const T val)

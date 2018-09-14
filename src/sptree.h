@@ -225,7 +225,7 @@ struct kd_node : public binary_tree_node
 template <typename _Ele,
 	  typename _Contain,
 	  typename _ArbitraryPointGetter,
-	  typename _BB_Unit = Float,
+	  typename _BB_Unit = float,
 	  const int _Depth = 10>
 class octree
 {

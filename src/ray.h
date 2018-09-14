@@ -270,7 +270,7 @@ struct ray
     vec3<T> direction;
 };
 
-typedef ray<Float> rayF;
+typedef ray<float> rayf;
 
 
 GB_PHYSICS_NS_END
